@@ -2,37 +2,99 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Português Prático</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audio</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px;
+            display: block;
+        }
+        #messages {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 200px;
+        }
+    </style>
 </head>
 <body>
-    <div class="app">
-        <div class="header">
-            <h1 id="activity-title">Chargement...</h1>
-            <span id="level-badge" class="level-badge">A1</span>
-        </div>
+    <h1>Test Audio</h1>
+    <button id="testButton">Tester l'audio</button>
+    <button id="testMic">Tester le micro</button>
+    <div id="messages"></div>
 
-        <div class="activity-info">
-            <p id="activity-description">Chargement de l'activité...</p>
-        </div>
+    <script>
+        let synth = window.speechSynthesis;
+        let recognition = null;
 
-        <div class="progress-bar">
-            <div id="progress" class="progress"></div>
-        </div>
+        function addMessage(text) {
+            const messages = document.getElementById('messages');
+            messages.innerHTML += text + '<br>';
+        }
 
-        <div id="chat" class="chat">
-            <div class="message assistant">
-                Bienvenue ! Je suis prêt à commencer l'exercice avec vous.
-            </div>
-        </div>
+        // Test de la synthèse vocale
+        document.getElementById('testButton').addEventListener('click', () => {
+            addMessage('Test de la synthèse vocale...');
+            
+            const utterance = new SpeechSynthesisUtterance('Olá, tudo bem?');
+            utterance.lang = 'pt-BR';
+            
+            utterance.onstart = () => {
+                addMessage('Audio démarré');
+            };
+            
+            utterance.onend = () => {
+                addMessage('Audio terminé');
+            };
+            
+            utterance.onerror = (event) => {
+                addMessage('Erreur: ' + event.error);
+            };
+            
+            synth.speak(utterance);
+        });
 
-        <div class="controls">
-            <div id="status" class="status"></div>
-            <button id="startButton" class="start-button">Commencer</button>
-            <button id="micButton" class="mic-button" style="display: none;">🎤</button>
-        </div>
-    </div>
-    <script src="script.js"></script>
+        // Test du microphone
+        document.getElementById('testMic').addEventListener('click', () => {
+            if (!('webkitSpeechRecognition' in window)) {
+                addMessage('La reconnaissance vocale n\'est pas supportée');
+                return;
+            }
+
+            if (!recognition) {
+                recognition = new webkitSpeechRecognition();
+                recognition.lang = 'pt-BR';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    addMessage('Écoute démarrée...');
+                };
+
+                recognition.onresult = (event) => {
+                    const text = event.results[0][0].transcript;
+                    addMessage('Entendu: ' + text);
+                };
+
+                recognition.onerror = (event) => {
+                    addMessage('Erreur micro: ' + event.error);
+                };
+
+                recognition.onend = () => {
+                    addMessage('Écoute terminée');
+                };
+            }
+
+            recognition.start();
+        });
+    </script>
 </body>
 </html>
