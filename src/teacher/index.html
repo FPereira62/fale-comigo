@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Português Prático</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Tableau de bord</h1>
+            <button onclick="generateQRCode()" class="primary">Générer QR Code</button>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h2>Navigation</h2>
+                <ul>
+                    <li><a href="#" class="active" onclick="showSection('activities')">Activités</a></li>
+                    <li><a href="#" onclick="showSection('create')">Créer une activité</a></li>
+                </ul>
+            </div>
+
+            <div class="content">
+                <div id="activities-section">
+                    <div class="activities-header">
+                        <h2>Mes Activités</h2>
+                        <button onclick="showSection('create')" class="secondary">+ Nouvelle activité</button>
+                    </div>
+                    <div id="activities-list"></div>
+                </div>
+
+                <div id="create-section" style="display: none;">
+                    <h2>Créer une nouvelle activité</h2>
+                    <form id="activity-form" onsubmit="saveActivity(event)">
+                        <div class="form-group">
+                            <label>Titre</label>
+                            <input type="text" name="title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Niveau</label>
+                            <select name="level" required>
+                                <option value="A1">A1</option>
+                                <option value="A2">A2</option>
+                                <option value="B1">B1</option>
+                                <option value="B2">B2</option>
+                            </select>
+                        </div>
+
+                        <div class="phrases-container">
+                            <h3>Phrases et Réponses</h3>
+                            <div id="phrases-list">
+                                <div class="phrase-pair">
+                                    <div>
+                                        <label>Phrase</label>
+                                        <input type="text" name="phrases[]" required>
+                                    </div>
+                                    <div>
+                                        <label>Réponse attendue</label>
+                                        <input type="text" name="responses[]" required>
+                                    </div>
+                                    <button type="button" class="delete" onclick="removePair(this)">×</button>
+                                </div>
+                            </div>
+                            <button type="button" class="secondary" onclick="addPhrasePair()">+ Ajouter une phrase</button>
+                        </div>
+
+                        <button type="submit" class="primary">Enregistrer l'activité</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

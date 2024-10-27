@@ -1,0 +1,13 @@
+{
+  "name": "portugues-pratico",
+  "version": "1.0.0",
+  "description": "Application d'apprentissage du portugais",
+  "scripts": {
+    "start": "serve src",
+    "build": "mkdir -p dist && cp -r src/* dist/"
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  },
+  "devDependencies": {}
+}
