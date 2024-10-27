@@ -2,98 +2,315 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Audio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Português Prático</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: system-ui, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        button {
-            font-size: 18px;
-            padding: 10px 20px;
-            margin: 10px;
-            display: block;
+
+        .header {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        #messages {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            min-height: 200px;
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .level-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .activity-info {
+            background: white;
+            margin: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 80px;
+        }
+
+        .message {
+            max-width: 85%;
+            margin: 0.5rem 0;
+            padding: 0.8rem;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .assistant {
+            background: #e3f2fd;
+            margin-right: auto;
+        }
+
+        .user {
+            background: #f5f5f5;
+            margin-left: auto;
+        }
+
+        .system {
+            background: #fff3e0;
+            margin: 1rem auto;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 24px;
+            font-size: 1rem;
+            background: #2196f3;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        .mic-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2196f3;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-button.recording {
+            background: #f44336;
+            transform: scale(1.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #ddd;
+            margin: 1rem;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: #2196f3;
+            width: 0;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
-    <h1>Test Audio</h1>
-    <button id="testButton">Tester l'audio</button>
-    <button id="testMic">Tester le micro</button>
-    <div id="messages"></div>
+    <div class="header">
+        <h1 id="activity-title">Au restaurant</h1>
+        <span class="level-badge">A1</span>
+    </div>
+
+    <div class="activity-info">
+        <p id="activity-description">Pratiquez une conversation au restaurant</p>
+    </div>
+
+    <div class="progress-bar">
+        <div id="progress" class="progress"></div>
+    </div>
+
+    <div id="chat" class="chat">
+        <div class="message system">Bienvenue ! Appuyez sur Commencer pour débuter l'exercice.</div>
+    </div>
+
+    <div class="controls">
+        <button id="startButton" class="button">Commencer</button>
+        <button id="micButton" class="mic-button" style="display: none;">🎤</button>
+    </div>
 
     <script>
+        // Activités préchargées
+        const activities = [
+            {
+                title: "Au restaurant",
+                description: "Pratiquez une conversation au restaurant",
+                level: "A1",
+                phrases: [
+                    "Bom dia, eu queria fazer um pedido",
+                    "Eu quero um café, por favor",
+                    "Quanto custa?",
+                    "A conta, por favor"
+                ],
+                responses: [
+                    "Bom dia, o que você deseja?",
+                    "Pois não, um café",
+                    "São cinco reais",
+                    "Aqui está a conta"
+                ]
+            }
+        ];
+
+        // Variables globales
+        let currentActivity = activities[0];
+        let currentPhraseIndex = 0;
         let synth = window.speechSynthesis;
         let recognition = null;
+        let isRecording = false;
 
-        function addMessage(text) {
-            const messages = document.getElementById('messages');
-            messages.innerHTML += text + '<br>';
+        // Ajouter un message au chat
+        function addMessage(type, text) {
+            const chat = document.getElementById('chat');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            chat.appendChild(message);
+            chat.scrollTop = chat.scrollHeight;
         }
 
-        // Test de la synthèse vocale
-        document.getElementById('testButton').addEventListener('click', () => {
-            addMessage('Test de la synthèse vocale...');
-            
-            const utterance = new SpeechSynthesisUtterance('Olá, tudo bem?');
-            utterance.lang = 'pt-BR';
-            
-            utterance.onstart = () => {
-                addMessage('Audio démarré');
-            };
-            
-            utterance.onend = () => {
-                addMessage('Audio terminé');
-            };
-            
-            utterance.onerror = (event) => {
-                addMessage('Erreur: ' + event.error);
-            };
-            
-            synth.speak(utterance);
-        });
+        // Mettre à jour la barre de progression
+        function updateProgress() {
+            const progress = document.getElementById('progress');
+            const percentage = (currentPhraseIndex / currentActivity.phrases.length) * 100;
+            progress.style.width = `${percentage}%`;
+        }
 
-        // Test du microphone
-        document.getElementById('testMic').addEventListener('click', () => {
+        // Parler un texte
+        function speak(text) {
+            return new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.onend = resolve;
+                addMessage('assistant', text);
+                synth.speak(utterance);
+            });
+        }
+
+        // Initialiser la reconnaissance vocale
+        function initSpeechRecognition() {
             if (!('webkitSpeechRecognition' in window)) {
-                addMessage('La reconnaissance vocale n\'est pas supportée');
+                addMessage('system', 'La reconnaissance vocale n\'est pas supportée');
                 return;
             }
 
-            if (!recognition) {
-                recognition = new webkitSpeechRecognition();
-                recognition.lang = 'pt-BR';
-                recognition.continuous = false;
-                recognition.interimResults = false;
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
 
-                recognition.onstart = () => {
-                    addMessage('Écoute démarrée...');
-                };
+            recognition.onstart = () => {
+                isRecording = true;
+                document.getElementById('micButton').classList.add('recording');
+            };
 
-                recognition.onresult = (event) => {
-                    const text = event.results[0][0].transcript;
-                    addMessage('Entendu: ' + text);
-                };
+            recognition.onend = () => {
+                isRecording = false;
+                document.getElementById('micButton').classList.remove('recording');
+            };
 
-                recognition.onerror = (event) => {
-                    addMessage('Erreur micro: ' + event.error);
-                };
+            recognition.onresult = async (event) => {
+                const text = event.results[0][0].transcript;
+                addMessage('user', text);
+                
+                const currentPhrase = currentActivity.phrases[currentPhraseIndex];
+                const currentResponse = currentActivity.responses[currentPhraseIndex];
+                
+                if (text.toLowerCase().includes(currentResponse.toLowerCase()) ||
+                    currentResponse.toLowerCase().includes(text.toLowerCase())) {
+                    addMessage('system', '✓ Très bien !');
+                    currentPhraseIndex++;
+                    updateProgress();
+                    
+                    if (currentPhraseIndex < currentActivity.phrases.length) {
+                        setTimeout(() => {
+                            speak(currentActivity.phrases[currentPhraseIndex]);
+                        }, 1000);
+                    } else {
+                        addMessage('system', 'Félicitations ! Vous avez terminé l\'exercice.');
+                        document.getElementById('micButton').style.display = 'none';
+                        document.getElementById('startButton').style.display = 'block';
+                        document.getElementById('startButton').textContent = 'Recommencer';
+                    }
+                } else {
+                    addMessage('system', '✗ Essayez encore');
+                    setTimeout(() => {
+                        speak(currentPhrase);
+                    }, 1000);
+                }
+            };
 
-                recognition.onend = () => {
-                    addMessage('Écoute terminée');
-                };
-            }
+            recognition.onerror = (event) => {
+                console.error('Erreur:', event.error);
+                addMessage('system', 'Erreur de reconnaissance vocale');
+            };
+        }
 
-            recognition.start();
+        // Gérer le démarrage de l'exercice
+        async function startExercise() {
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('micButton').style.display = 'block';
+            currentPhraseIndex = 0;
+            updateProgress();
+            
+            addMessage('system', 'Commençons l\'exercice. Écoutez et répétez.');
+            await speak(currentActivity.phrases[0]);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            initSpeechRecognition();
+            
+            document.getElementById('startButton').addEventListener('click', startExercise);
+            
+            document.getElementById('micButton').addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
         });
     </script>
 </body>
