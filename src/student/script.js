@@ -1,49 +1,60 @@
-// Ajoutez ces variables au début du fichier, avec les autres variables globales
-let synth = window.speechSynthesis;
-let voices = [];
+// Activités préchargées (garder la même partie)...
 
-// Ajoutez cette nouvelle fonction
-function initializeSpeechSynthesis() {
-    synth = window.speechSynthesis;
+// Variables globales
+let recognition = null;
+let synth = null;
+let voices = [];
+let currentExerciseIndex = 0;
+let activity = null;
+let isRecording = false;
+let audioInitialized = false;
+
+// Initialisation de la synthèse vocale
+async function initAudio() {
+    if (audioInitialized) return true;
     
-    // Fonction pour charger les voix
-    function loadVoices() {
+    try {
+        synth = window.speechSynthesis;
+        // Force le chargement des voix
+        await new Promise((resolve) => {
+            if (synth.getVoices().length > 0) {
+                resolve();
+            } else {
+                synth.onvoiceschanged = resolve;
+            }
+        });
+        
         voices = synth.getVoices();
         const portugueseVoice = voices.find(voice => 
             voice.lang.includes('pt-BR') || voice.lang.includes('pt-PT')
         );
+        
         if (portugueseVoice) {
-            console.log('Voix portugaise trouvée:', portugueseVoice.name);
+            addMessage('system', 'Système audio initialisé');
+            audioInitialized = true;
+            return true;
         } else {
-            console.log('Aucune voix portugaise trouvée');
+            addMessage('system', 'Pas de voix portugaise trouvée');
+            return false;
         }
-    }
-
-    // Chargement initial des voix
-    loadVoices();
-
-    // Événement de chargement des voix (nécessaire pour Chrome)
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = loadVoices;
+    } catch (error) {
+        console.error('Erreur initialisation audio:', error);
+        addMessage('system', 'Erreur initialisation audio');
+        return false;
     }
 }
 
-// Remplacez la fonction speak existante par celle-ci
-function speak(text) {
-    return new Promise((resolve, reject) => {
-        if (!synth) {
-            console.error('La synthèse vocale n\'est pas supportée');
-            addMessage('system', 'Erreur: synthèse vocale non supportée');
-            reject(new Error('Synthèse vocale non supportée'));
-            return;
-        }
+// Fonction de synthèse vocale
+async function speak(text) {
+    if (!audioInitialized) {
+        const initialized = await initAudio();
+        if (!initialized) return;
+    }
 
-        // Annuler toute synthèse vocale en cours
-        synth.cancel();
+    return new Promise((resolve, reject) => {
+        synth.cancel(); // Arrête toute synthèse en cours
 
         const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Trouver une voix portugaise
         const portugueseVoice = voices.find(voice => 
             voice.lang.includes('pt-BR') || voice.lang.includes('pt-PT')
         );
@@ -51,20 +62,20 @@ function speak(text) {
         if (portugueseVoice) {
             utterance.voice = portugueseVoice;
         }
-        
+
         utterance.lang = 'pt-BR';
         utterance.rate = 0.9;
         utterance.pitch = 1;
         utterance.volume = 1;
 
         utterance.onend = () => {
-            console.log('Audio terminé');
+            addMessage('system', '(Audio terminé)');
             resolve();
         };
 
         utterance.onerror = (event) => {
-            console.error('Erreur de synthèse vocale:', event);
-            addMessage('system', 'Erreur de synthèse vocale');
+            console.error('Erreur audio:', event);
+            addMessage('system', 'Erreur de lecture audio');
             reject(event);
         };
 
@@ -73,32 +84,87 @@ function speak(text) {
     });
 }
 
-// Modifiez la fonction d'initialisation pour inclure la synthèse vocale
-document.addEventListener('DOMContentLoaded', () => {
-    initializeSpeechRecognition();
-    initializeSpeechSynthesis();
-    loadActivity();
-});
-
-// Modifiez la fonction startExercise pour utiliser async/await
+// Modification de la fonction startExercise
 async function startExercise() {
+    addMessage('system', 'Démarrage de l\'exercice...');
+    
     if (!activity || !activity.phrases || activity.phrases.length === 0) {
-        addMessage('system', "Impossible de démarrer : aucune phrase n'est disponible");
+        addMessage('system', "Erreur: aucune phrase disponible");
         return;
     }
-    
-    document.getElementById('startButton').style.display = 'none';
-    document.getElementById('micButton').style.display = 'block';
-    currentExerciseIndex = 0;
-    updateProgress();
-    
-    addMessage('assistant', "Commençons l'exercice. Écoutez et répétez.");
-    
+
     try {
+        // Initialisation de l'audio au clic
+        const audioReady = await initAudio();
+        if (!audioReady) {
+            addMessage('system', 'Impossible d\'initialiser l\'audio');
+            return;
+        }
+
+        document.getElementById('startButton').style.display = 'none';
+        document.getElementById('micButton').style.display = 'block';
+        currentExerciseIndex = 0;
+        updateProgress();
+
+        addMessage('assistant', "Commençons l'exercice. Écoutez et répétez.");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await speak(activity.phrases[0]);
+        
+        // Activation du microphone après la lecture
+        document.getElementById('micButton').disabled = false;
+
     } catch (error) {
-        console.error('Erreur lors de la lecture:', error);
-        addMessage('system', 'Erreur lors de la lecture audio');
+        console.error('Erreur de démarrage:', error);
+        addMessage('system', 'Erreur lors du démarrage de l\'exercice');
+        document.getElementById('startButton').style.display = 'block';
     }
 }
+
+// Mise à jour de la fonction checkResponse
+async function checkResponse(userText) {
+    if (!activity || currentExerciseIndex >= activity.phrases.length) return;
+    
+    const expectedResponse = activity.responses[currentExerciseIndex].toLowerCase();
+    const userResponse = userText.toLowerCase();
+    
+    const isCorrect = userResponse.includes(expectedResponse) || 
+                     expectedResponse.includes(userResponse);
+    
+    if (isCorrect) {
+        addMessage('system', '✓ Très bien !');
+        currentExerciseIndex++;
+        updateProgress();
+        
+        if (currentExerciseIndex < activity.phrases.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await speak(activity.phrases[currentExerciseIndex]);
+        } else {
+            addMessage('system', 'Félicitations ! Exercice terminé.');
+            document.getElementById('micButton').style.display = 'none';
+            const startButton = document.getElementById('startButton');
+            startButton.textContent = 'Recommencer';
+            startButton.style.display = 'block';
+            currentExerciseIndex = 0;
+        }
+    } else {
+        addMessage('system', '✗ Essayez encore');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await speak(activity.phrases[currentExerciseIndex]);
+    }
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', () => {
+    initializeSpeechRecognition();
+    loadActivity();
+    
+    // Ajout d'un gestionnaire d'événements pour le bouton de démarrage
+    document.getElementById('startButton').addEventListener('click', async () => {
+        try {
+            await startExercise();
+        } catch (error) {
+            console.error('Erreur lors du démarrage:', error);
+            addMessage('system', 'Erreur lors du démarrage');
+        }
+    });
+});
