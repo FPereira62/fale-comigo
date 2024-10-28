@@ -3,67 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration d'Activité</title>
+    <title>Configuration d'Activité - Português Prático</title>
     <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            line-height: 1.5;
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            line-height: 1.5;
             background: #f0f2f5;
+            color: #333;
         }
 
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 20px auto;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 2rem;
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            margin: 0 0 20px 0;
-            color: #333;
-            font-size: 24px;
-        }
-
-        h2 {
-            margin: 0 0 20px 0;
-            color: #333;
-            font-size: 20px;
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
         }
 
         .section {
-            margin-bottom: 30px;
-            padding: 20px;
             background: #f8f9fa;
             border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
             font-weight: 500;
-            color: #333;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
         }
 
         input, select, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 0.8rem;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 1rem;
             background: white;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #2196f3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
         }
 
         textarea {
@@ -71,19 +70,76 @@
             resize: vertical;
         }
 
-        .buttons {
+        .chips-container {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            min-height: 38px;
+            padding: 0.5rem;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+        }
+
+        .chip {
+            background: #e3f2fd;
+            padding: 0.5rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .chip button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .add-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .add-item input {
+            flex: 1;
+        }
+
+        .add-item button {
+            padding: 0.8rem;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 0.8rem 1.5rem;
             border: none;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
 
         button.primary {
@@ -101,43 +157,62 @@
         }
 
         .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .modal-overlay {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-
-        .modal-header {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal-content {
-            margin-bottom: 20px;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-section h3 {
+            color: #2196f3;
+            margin-bottom: 0.5rem;
         }
 
         .modal-footer {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #e3f2fd;
+            border-radius: 4px;
+            margin: 0.25rem;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -177,6 +252,34 @@
                     <label>Personnalité</label>
                     <input type="text" name="personnalite" placeholder="Ex: patient, curieux, encourageant..." required>
                 </div>
+                <div class="form-group">
+                    <label>Objectifs pédagogiques</label>
+                    <div id="objectifs" class="chips-container"></div>
+                    <div class="add-item">
+                        <input type="text" id="newObjectif" placeholder="Ajouter un objectif">
+                        <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Paramètres linguistiques</h2>
+                <div class="form-group">
+                    <label>Structures grammaticales à pratiquer</label>
+                    <div id="structures" class="chips-container"></div>
+                    <div class="add-item">
+                        <input type="text" id="newStructure" placeholder="Ajouter une structure">
+                        <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Vocabulaire cible</label>
+                    <div id="vocabulaire" class="chips-container"></div>
+                    <div class="add-item">
+                        <input type="text" id="newVocab" placeholder="Ajouter du vocabulaire">
+                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
@@ -199,45 +302,136 @@
                 </div>
             </div>
 
-            <div class="buttons">
+            <div class="controls">
                 <button type="button" onclick="verifierConfig()" class="secondary">Vérifier la configuration</button>
                 <button type="submit" class="primary">Sauvegarder</button>
             </div>
         </form>
     </div>
 
+    <!-- Modal de vérification -->
+    <div id="verificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Vérification de la configuration</h2>
+                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-section">
+                <h3>Informations générales</h3>
+                <div id="review-info"></div>
+            </div>
+            <div class="modal-section">
+                <h3>Configuration du Chatbot</h3>
+                <div id="review-chatbot"></div>
+            </div>
+            <div class="modal-section">
+                <h3>Paramètres linguistiques</h3>
+                <div id="review-params"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="secondary">Fermer</button>
+                <button onclick="document.getElementById('configForm').requestSubmit()" class="primary">Tout est correct</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de succès -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Configuration sauvegardée !</h2>
+            </div>
+            <div style="text-align: center; margin: 2rem 0;">
+                <p>Que souhaitez-vous faire maintenant ?</p>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button onclick="resetForm()" class="secondary">Créer une nouvelle activité</button>
+                <button onclick="viewActivities()" class="primary">Voir les activités</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function addChip(containerId, inputId) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            const value = input.value.trim();
+            
+            if (value) {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML = `
+                    ${value}
+                    <button type="button" onclick="this.parentElement.remove()">&times;</button>
+                `;
+                container.appendChild(chip);
+                input.value = '';
+            }
+        }
+
+        function getChipsValues(containerId) {
+            return Array.from(document.getElementById(containerId).children)
+                .map(chip => chip.textContent.trim().replace('×', ''))
+                .filter(text => text.length > 0);
+        }
+
         function verifierConfig() {
             const form = document.getElementById('configForm');
             const formData = new FormData(form);
-            const config = Object.fromEntries(formData.entries());
+            const config = {
+                ...Object.fromEntries(formData.entries()),
+                objectifs: getChipsValues('objectifs'),
+                structures: getChipsValues('structures'),
+                vocabulaire: getChipsValues('vocabulaire')
+            };
             
-            let message = "Configuration actuelle :\n\n";
-            for (const [key, value] of Object.entries(config)) {
-                const label = {
-                    theme: "Thème",
-                    niveau: "Niveau",
-                    contexte: "Contexte",
-                    role: "Rôle",
-                    personnalite: "Personnalité",
-                    correction_style: "Style de correction",
-                    aide_niveau: "Niveau d'aide"
-                }[key];
-                
-                message += `${label}: ${value}\n`;
-            }
+            document.getElementById('review-info').innerHTML = `
+                <strong>Thème:</strong> ${config.theme}<br>
+                <strong>Niveau:</strong> ${config.niveau}<br>
+                <strong>Contexte:</strong> ${config.contexte}
+            `;
             
-            alert(message);
+            document.getElementById('review-chatbot').innerHTML = `
+                <strong>Rôle:</strong> ${config.role}<br>
+                <strong>Personnalité:</strong> ${config.personnalite}<br>
+                <strong>Objectifs:</strong><br>
+                ${config.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}
+            `;
+            
+            document.getElementById('review-params').innerHTML = `
+                <strong>Structures grammaticales:</strong><br>
+                ${config.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}<br>
+                <strong>Vocabulaire:</strong><br>
+                ${config.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}<br>
+                <strong>Style de correction:</strong> ${config.correction_style}<br>
+                <strong>Niveau d'aide:</strong> ${config.aide_niveau}
+            `;
+            
+            document.getElementById('verificationModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('verificationModal').style.display = 'none';
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        function resetForm() {
+            document.getElementById('configForm').reset();
+            ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            closeModal();
+        }
+
+        function viewActivities() {
+            // À implémenter : redirection vers la liste des activités
+            alert('Cette fonctionnalité sera bientôt disponible !');
+            closeModal();
         }
 
         document.getElementById('configForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            const config = Object.fromEntries(formData.entries());
-            
-            localStorage.setItem('currentConfig', JSON.stringify(config));
-            alert('Configuration sauvegardée avec succès !');
-        });
-    </script>
-</body>
-</html>
+            const config = {
+                ...Object.fromEntries(formData.entries()),
+                objectifs: getChipsValues('objectifs
