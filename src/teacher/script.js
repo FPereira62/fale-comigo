@@ -1,110 +1,107 @@
-// Gestion du stockage local des activités
-const STORAGE_KEY = 'portugues-pratico-activities';
+// Remplacez tout le contenu de la balise <script> par ce qui suit :
+<script>
+    let currentStep = 1;
+    const totalSteps = 3;
 
-// Charger les activités existantes
-function loadActivities() {
-    const activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const list = document.getElementById('activities-list');
-    list.innerHTML = '';
-    
-    activities.forEach((activity, index) => {
-        const card = document.createElement('div');
-        card.className = 'activity-card';
-        card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div>
-                    <h3>${activity.title}
-                        <span class="level-badge">${activity.level}</span>
-                    </h3>
-                    <p>${activity.description}</p>
-                </div>
-                <button onclick="generateQRCode(${index})" class="secondary">QR Code</button>
-            </div>
-        `;
-        list.appendChild(card);
-    });
-}
-
-// Sauvegarder une nouvelle activité
-function saveActivity(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    
-    const phrases = [];
-    const responses = [];
-    form.querySelectorAll('input[name="phrases[]"]').forEach(input => phrases.push(input.value));
-    form.querySelectorAll('input[name="responses[]"]').forEach(input => responses.push(input.value));
-    
-    const activity = {
-        title: formData.get('title'),
-        description: formData.get('description'),
-        level: formData.get('level'),
-        phrases,
-        responses,
-        created: new Date().toISOString()
-    };
-    
-    const activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    activities.push(activity);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(activities));
-    
-    showSection('activities');
-    loadActivities();
-    form.reset();
-}
-
-// Ajouter une nouvelle paire phrase/réponse
-function addPhrasePair() {
-    const template = `
-        <div class="phrase-pair">
-            <div>
-                <label>Phrase</label>
-                <input type="text" name="phrases[]" required>
-            </div>
-            <div>
-                <label>Réponse attendue</label>
-                <input type="text" name="responses[]" required>
-            </div>
-            <button type="button" class="delete" onclick="removePair(this)">×</button>
-        </div>
-    `;
-    document.getElementById('phrases-list').insertAdjacentHTML('beforeend', template);
-}
-
-// Supprimer une paire phrase/réponse
-function removePair(button) {
-    button.closest('.phrase-pair').remove();
-}
-
-// Gérer la navigation entre les sections
-function showSection(sectionId) {
-    document.querySelectorAll('.content > div').forEach(div => {
-        div.style.display = 'none';
-    });
-    document.getElementById(`${sectionId}-section`).style.display = 'block';
-    
-    document.querySelectorAll('.sidebar a').forEach(a => {
-        a.classList.remove('active');
-    });
-    document.querySelector(`.sidebar a[onclick="showSection('${sectionId}')"]`).classList.add('active');
-    
-    if (sectionId === 'activities') {
-        loadActivities();
+    function addChip(containerId, inputId) {
+        const container = document.getElementById(containerId);
+        const input = document.getElementById(inputId);
+        const value = input.value.trim();
+        
+        if (value) {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.innerHTML = `
+                ${value}
+                <button type="button" onclick="this.parentElement.remove()">×</button>
+            `;
+            container.appendChild(chip);
+            input.value = '';
+        }
     }
-}
 
-// Générer un QR Code pour une activité
-function generateQRCode(index) {
-    const activities = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    const activity = activities[index];
-    const url = `${window.location.origin}/student/index.html?activity=${index}`;
-    
-    // Pour cette version de test, on affiche simplement l'URL
-    alert(`URL de l'activité : ${url}\n\nVous pourrez scanner ce QR code avec l'application mobile.`);
-}
+    function getChipsValues(containerId) {
+        return Array.from(document.getElementById(containerId).children)
+            .map(chip => chip.textContent.trim().replace('×', '').trim())
+            .filter(text => text.length > 0); // Filtrer les chaînes vides
+    }
 
-// Charger les activités au démarrage
-document.addEventListener('DOMContentLoaded', () => {
-    loadActivities();
-});
+    function getFormData() {
+        const formData = new FormData(document.getElementById('configForm'));
+        const config = {
+            theme: formData.get('theme'),
+            niveau: formData.get('niveau'),
+            contexte: formData.get('contexte'),
+            role: formData.get('role'),
+            personnalite: formData.get('personnalite'),
+            correction_style: formData.get('correction_style'),
+            aide_niveau: formData.get('aide_niveau'),
+            objectifs: getChipsValues('objectifs'),
+            structures: getChipsValues('structures'),
+            vocabulaire: getChipsValues('vocabulaire')
+        };
+        
+        return config;
+    }
+
+    function previewConfig() {
+        const preview = document.getElementById('configPreview');
+        const config = getFormData();
+        
+        // Formater le JSON pour l'affichage
+        const formattedConfig = JSON.stringify(config, null, 2);
+        
+        // Mettre à jour l'affichage
+        preview.querySelector('code').textContent = formattedConfig;
+        
+        // Basculer l'affichage
+        if (preview.style.display === 'none') {
+            preview.style.display = 'block';
+            preview.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    function saveConfig() {
+        const config = getFormData();
+        localStorage.setItem('currentConfig', JSON.stringify(config));
+        alert('Configuration sauvegardée !');
+        // Ici, vous pourriez rediriger vers la page suivante
+        // window.location.href = '/next-page';
+    }
+
+    function goBack() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateSteps();
+        }
+    }
+
+    function goForward() {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            updateSteps();
+        } else {
+            saveConfig();
+        }
+    }
+
+    function updateSteps() {
+        const steps = document.querySelectorAll('.step');
+        steps.forEach((step, index) => {
+            step.classList.remove('active', 'completed');
+            if (index + 1 === currentStep) {
+                step.classList.add('active');
+            } else if (index + 1 < currentStep) {
+                step.classList.add('completed');
+            }
+        });
+    }
+
+    // Écouteurs d'événements pour les boutons
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('button.secondary').addEventListener('click', goBack);
+        document.querySelector('button.primary').addEventListener('click', goForward);
+    });
+</script>
