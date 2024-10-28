@@ -16,20 +16,30 @@
             line-height: 1.5;
             background: #f0f2f5;
             color: #333;
+            padding: 20px;
         }
 
         .container {
             max-width: 800px;
-            margin: 20px auto;
+            margin: 0 auto;
             background: white;
             padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        h1, h2, h3 {
+        h1 {
+            margin-bottom: 2rem;
             color: #2c3e50;
-            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
         }
 
         .section {
@@ -40,7 +50,7 @@
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
         }
 
         label {
@@ -57,12 +67,13 @@
             border-radius: 6px;
             font-size: 1rem;
             background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #2196f3;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
 
         textarea {
@@ -74,16 +85,16 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-top: 0.5rem;
-            min-height: 38px;
+            min-height: 44px;
             padding: 0.5rem;
             border: 1px dashed #ddd;
             border-radius: 6px;
+            margin-bottom: 0.5rem;
         }
 
         .chip {
             background: #e3f2fd;
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 16px;
             display: flex;
             align-items: center;
@@ -96,41 +107,19 @@
             border: none;
             color: #666;
             cursor: pointer;
-            font-size: 1.2rem;
             padding: 0;
             display: flex;
             align-items: center;
+            font-size: 1.2rem;
         }
 
         .add-item {
             display: flex;
             gap: 0.5rem;
-            margin-top: 0.5rem;
         }
 
         .add-item input {
             flex: 1;
-        }
-
-        .add-item button {
-            padding: 0.8rem;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .controls {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
         }
 
         button {
@@ -156,25 +145,39 @@
             opacity: 0.9;
         }
 
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
             align-items: center;
             justify-content: center;
+            z-index: 1000;
         }
 
         .modal-content {
             background: white;
             padding: 2rem;
             border-radius: 12px;
-            max-width: 600px;
             width: 90%;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -188,13 +191,21 @@
             border-bottom: 1px solid #eee;
         }
 
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
         .modal-section {
             margin-bottom: 1.5rem;
         }
 
         .modal-section h3 {
             color: #2196f3;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
         }
 
         .modal-footer {
@@ -214,9 +225,56 @@
             margin: 0.25rem;
             font-size: 0.9rem;
         }
+
+        /* Feedback messages */
+        .feedback {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .feedback.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .feedback.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 4px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
+<!-- Insérer après la balise <body> de la partie 1 -->
     <div class="container">
         <h1>Configuration de l'Activité</h1>
         
@@ -224,40 +282,60 @@
             <div class="section">
                 <h2>Informations générales</h2>
                 <div class="form-group">
-                    <label>Thème de l'activité</label>
+                    <label>
+                        Thème de l'activité
+                        <div class="tooltip">?
+                            <span class="tooltip-text">Le sujet principal de la conversation</span>
+                        </div>
+                    </label>
                     <input type="text" name="theme" placeholder="Ex: Voyages, Restaurant..." required>
                 </div>
+
                 <div class="form-group">
                     <label>Niveau</label>
                     <select name="niveau" required>
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
+                        <option value="">Sélectionnez un niveau</option>
+                        <option value="A1">A1 - Débutant</option>
+                        <option value="A2">A2 - Élémentaire</option>
+                        <option value="B1">B1 - Intermédiaire</option>
+                        <option value="B2">B2 - Avancé</option>
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <label>Contexte</label>
-                    <textarea name="contexte" placeholder="Décrivez le contexte de la conversation..." required></textarea>
+                    <label>
+                        Contexte
+                        <div class="tooltip">?
+                            <span class="tooltip-text">Description détaillée de la situation de conversation</span>
+                        </div>
+                    </label>
+                    <textarea name="contexte" placeholder="Décrivez le contexte spécifique de la conversation..." required></textarea>
                 </div>
             </div>
 
             <div class="section">
                 <h2>Configuration du Chatbot</h2>
                 <div class="form-group">
-                    <label>Rôle</label>
+                    <label>Rôle du chatbot</label>
                     <input type="text" name="role" placeholder="Ex: ami, serveur, professeur..." required>
                 </div>
+
                 <div class="form-group">
                     <label>Personnalité</label>
                     <input type="text" name="personnalite" placeholder="Ex: patient, curieux, encourageant..." required>
                 </div>
+
                 <div class="form-group">
-                    <label>Objectifs pédagogiques</label>
+                    <label>
+                        Objectifs pédagogiques
+                        <div class="tooltip">?
+                            <span class="tooltip-text">Compétences à développer pendant l'activité</span>
+                        </div>
+                    </label>
                     <div id="objectifs" class="chips-container"></div>
                     <div class="add-item">
-                        <input type="text" id="newObjectif" placeholder="Ajouter un objectif">
-                        <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
+                        <input type="text" id="newObjectif" placeholder="Ex: Maîtriser le passé composé">
+                        <button type="button" onclick="addChip('objectifs', 'newObjectif')" class="primary">+</button>
                     </div>
                 </div>
             </div>
@@ -268,16 +346,17 @@
                     <label>Structures grammaticales à pratiquer</label>
                     <div id="structures" class="chips-container"></div>
                     <div class="add-item">
-                        <input type="text" id="newStructure" placeholder="Ajouter une structure">
-                        <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
+                        <input type="text" id="newStructure" placeholder="Ex: Verbes au présent">
+                        <button type="button" onclick="addChip('structures', 'newStructure')" class="primary">+</button>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label>Vocabulaire cible</label>
                     <div id="vocabulaire" class="chips-container"></div>
                     <div class="add-item">
-                        <input type="text" id="newVocab" placeholder="Ajouter du vocabulaire">
-                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
+                        <input type="text" id="newVocab" placeholder="Ex: Mots liés aux voyages">
+                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')" class="primary">+</button>
                     </div>
                 </div>
             </div>
@@ -285,25 +364,31 @@
             <div class="section">
                 <h2>Style d'interaction</h2>
                 <div class="form-group">
-                    <label>Style de correction</label>
-                    <select name="correction_style">
+                    <label>
+                        Style de correction
+                        <div class="tooltip">?
+                            <span class="tooltip-text">Quand et comment corriger les erreurs</span>
+                        </div>
+                    </label>
+                    <select name="correction_style" required>
                         <option value="immediate">Correction immédiate</option>
                         <option value="delayed">Correction différée</option>
                         <option value="selective">Correction sélective</option>
                     </select>
                 </div>
+
                 <div class="form-group">
                     <label>Niveau d'aide</label>
-                    <select name="aide_niveau">
-                        <option value="minimal">Minimal</option>
-                        <option value="modere">Modéré</option>
-                        <option value="important">Important</option>
+                    <select name="aide_niveau" required>
+                        <option value="minimal">Minimal - Peu d'indices</option>
+                        <option value="modere">Modéré - Quelques suggestions</option>
+                        <option value="important">Important - Beaucoup d'aide</option>
                     </select>
                 </div>
             </div>
 
             <div class="controls">
-                <button type="button" onclick="verifierConfig()" class="secondary">Vérifier la configuration</button>
+                <button type="button" onclick="verifierConfig()" class="secondary">Vérifier</button>
                 <button type="submit" class="primary">Sauvegarder</button>
             </div>
         </form>
@@ -314,23 +399,25 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Vérification de la configuration</h2>
-                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                <button class="modal-close" onclick="closeModal('verificationModal')">&times;</button>
             </div>
-            <div class="modal-section">
-                <h3>Informations générales</h3>
-                <div id="review-info"></div>
-            </div>
-            <div class="modal-section">
-                <h3>Configuration du Chatbot</h3>
-                <div id="review-chatbot"></div>
-            </div>
-            <div class="modal-section">
-                <h3>Paramètres linguistiques</h3>
-                <div id="review-params"></div>
+            <div id="configSummary">
+                <div class="modal-section">
+                    <h3>Informations générales</h3>
+                    <div id="review-info"></div>
+                </div>
+                <div class="modal-section">
+                    <h3>Configuration du Chatbot</h3>
+                    <div id="review-chatbot"></div>
+                </div>
+                <div class="modal-section">
+                    <h3>Paramètres linguistiques</h3>
+                    <div id="review-params"></div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal()" class="secondary">Fermer</button>
-                <button onclick="document.getElementById('configForm').requestSubmit()" class="primary">Tout est correct</button>
+                <button onclick="closeModal('verificationModal')" class="secondary">Modifier</button>
+                <button onclick="document.getElementById('configForm').requestSubmit()" class="primary">Confirmer</button>
             </div>
         </div>
     </div>
@@ -339,19 +426,21 @@
     <div id="successModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Configuration sauvegardée !</h2>
+                <h2>Configuration sauvegardée</h2>
+                <button class="modal-close" onclick="closeModal('successModal')">&times;</button>
             </div>
-            <div style="text-align: center; margin: 2rem 0;">
-                <p>Que souhaitez-vous faire maintenant ?</p>
+            <div class="feedback success">
+                L'activité a été sauvegardée avec succès !
             </div>
-            <div class="modal-footer" style="justify-content: center;">
-                <button onclick="resetForm()" class="secondary">Créer une nouvelle activité</button>
+            <div class="modal-footer">
+                <button onclick="resetForm()" class="secondary">Nouvelle activité</button>
                 <button onclick="viewActivities()" class="primary">Voir les activités</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Gestion des chips (tags)
         function addChip(containerId, inputId) {
             const container = document.getElementById(containerId);
             const input = document.getElementById(inputId);
@@ -362,11 +451,15 @@
                 chip.className = 'chip';
                 chip.innerHTML = `
                     ${value}
-                    <button type="button" onclick="this.parentElement.remove()">&times;</button>
+                    <button type="button" onclick="removeChip(this)">&times;</button>
                 `;
                 container.appendChild(chip);
                 input.value = '';
             }
+        }
+
+        function removeChip(button) {
+            button.parentElement.remove();
         }
 
         function getChipsValues(containerId) {
@@ -375,6 +468,7 @@
                 .filter(text => text.length > 0);
         }
 
+        // Vérification de la configuration
         function verifierConfig() {
             const form = document.getElementById('configForm');
             const formData = new FormData(form);
@@ -384,54 +478,86 @@
                 structures: getChipsValues('structures'),
                 vocabulaire: getChipsValues('vocabulaire')
             };
-            
+
+            // Mise à jour du résumé
             document.getElementById('review-info').innerHTML = `
-                <strong>Thème:</strong> ${config.theme}<br>
-                <strong>Niveau:</strong> ${config.niveau}<br>
-                <strong>Contexte:</strong> ${config.contexte}
+                <p><strong>Thème:</strong> ${config.theme}</p>
+                <p><strong>Niveau:</strong> ${config.niveau}</p>
+                <p><strong>Contexte:</strong> ${config.contexte}</p>
             `;
-            
+
             document.getElementById('review-chatbot').innerHTML = `
-                <strong>Rôle:</strong> ${config.role}<br>
-                <strong>Personnalité:</strong> ${config.personnalite}<br>
-                <strong>Objectifs:</strong><br>
-                ${config.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}
+                <p><strong>Rôle:</strong> ${config.role}</p>
+                <p><strong>Personnalité:</strong> ${config.personnalite}</p>
+                <p><strong>Objectifs:</strong></p>
+                <div>${config.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}</div>
             `;
-            
+
             document.getElementById('review-params').innerHTML = `
-                <strong>Structures grammaticales:</strong><br>
-                ${config.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}<br>
-                <strong>Vocabulaire:</strong><br>
-                ${config.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}<br>
-                <strong>Style de correction:</strong> ${config.correction_style}<br>
-                <strong>Niveau d'aide:</strong> ${config.aide_niveau}
+                <p><strong>Structures grammaticales:</strong></p>
+                <div>${config.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}</div>
+                <p><strong>Vocabulaire:</strong></p>
+                <div>${config.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}</div>
+                <p><strong>Style de correction:</strong> ${config.correction_style}</p>
+                <p><strong>Niveau d'aide:</strong> ${config.aide_niveau}</p>
             `;
-            
-            document.getElementById('verificationModal').style.display = 'flex';
+
+            showModal('verificationModal');
         }
 
-        function closeModal() {
-            document.getElementById('verificationModal').style.display = 'none';
-            document.getElementById('successModal').style.display = 'none';
+        // Gestion des modales
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
         }
 
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Gestion du formulaire
         function resetForm() {
             document.getElementById('configForm').reset();
             ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
                 document.getElementById(id).innerHTML = '';
             });
-            closeModal();
+            closeModal('successModal');
         }
 
         function viewActivities() {
-            // À implémenter : redirection vers la liste des activités
-            alert('Cette fonctionnalité sera bientôt disponible !');
-            closeModal();
+            // Cette fonction sera implémentée plus tard pour afficher la liste des activités
+            alert('La liste des activités sera bientôt disponible !');
         }
 
+        // Événements du formulaire
         document.getElementById('configForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const config = {
                 ...Object.fromEntries(formData.entries()),
-                objectifs: getChipsValues('objectifs
+                objectifs: getChipsValues('objectifs'),
+                structures: getChipsValues('structures'),
+                vocabulaire: getChipsValues('vocabulaire')
+            };
+
+            // Sauvegarder dans le localStorage (temporaire)
+            localStorage.setItem('currentConfig', JSON.stringify(config));
+
+            // Fermer la modale de vérification si elle est ouverte
+            closeModal('verificationModal');
+            
+            // Afficher la modale de succès
+            showModal('successModal');
+        });
+
+        // Permettre l'ajout de chips avec la touche Entrée
+        ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
+            document.getElementById(inputId).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addChip(this.id.replace('new', '').toLowerCase(), this.id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
