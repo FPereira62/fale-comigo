@@ -316,16 +316,31 @@
 
         function getChipsValues(containerId) {
             return Array.from(document.getElementById(containerId).children)
-                .map(chip => chip.textContent.trim().replace('×', ''));
+                .map(chip => chip.textContent.trim().replace('×', '').trim());
         }
 
         function getFormData() {
             const formData = new FormData(document.getElementById('configForm'));
-            const config = Object.fromEntries(formData.entries());
-            
-            config.objectifs = getChipsValues('objectifs');
-            config.structures = getChipsValues('structures');
-            config.vocabulaire = getChipsValues('vocabulaire');
+            const config = {
+                informations_generales: {
+                    theme: formData.get('theme'),
+                    niveau: formData.get('niveau'),
+                    contexte: formData.get('contexte')
+                },
+                configuration_chatbot: {
+                    role: formData.get('role'),
+                    personnalite: formData.get('personnalite'),
+                    objectifs: getChipsValues('objectifs')
+                },
+                parametres_linguistiques: {
+                    structures_grammaticales: getChipsValues('structures'),
+                    vocabulaire: getChipsValues('vocabulaire')
+                },
+                gestion_erreurs: {
+                    correction_style: formData.get('correction_style'),
+                    niveau_aide: formData.get('aide_niveau')
+                }
+            };
             
             return config;
         }
@@ -333,14 +348,31 @@
         function previewConfig() {
             const preview = document.getElementById('configPreview');
             const config = getFormData();
-            preview.querySelector('code').textContent = JSON.stringify(config, null, 2);
-            preview.style.display = preview.style.display === 'none' ? 'block' : 'none';
+            
+            // Formater le JSON pour l'affichage
+            const formattedConfig = JSON.stringify(config, null, 2);
+            
+            // Mettre à jour l'affichage
+            preview.querySelector('code').textContent = formattedConfig;
+            
+            // Basculer l'affichage
+            if (preview.style.display === 'none') {
+                preview.style.display = 'block';
+                // Faire défiler jusqu'à l'aperçu
+                preview.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                preview.style.display = 'none';
+            }
         }
 
         function saveConfig() {
             const config = getFormData();
             console.log('Configuration sauvegardée:', config);
-            // Ici nous ajouterons la logique de sauvegarde
+            
+            // Afficher un message de confirmation
+            alert('Configuration sauvegardée avec succès !');
+            
+            // Ici nous ajouterons plus tard la logique de sauvegarde dans une base de données
         }
     </script>
 </body>
