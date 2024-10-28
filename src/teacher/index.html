@@ -5,298 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuration d'Activité - Português Prático</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        /* Styles précédents... */
 
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            line-height: 1.5;
-            background: #f0f2f5;
-            color: #333;
+        .preview-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: #1a1a1a;
+            color: white;
             padding: 2rem;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            overflow-y: auto;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .preview-panel.visible {
+            right: 0;
+        }
+
+        .preview-panel .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
             background: white;
             padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            color: #1a1a1a;
-        }
-
-        .steps {
-            display: flex;
-            margin-bottom: 2rem;
             border-radius: 8px;
-            overflow: hidden;
+            width: 90%;
+            max-width: 500px;
         }
 
-        .step {
-            flex: 1;
-            padding: 1rem;
-            background: #e9ecef;
+        .success-message {
             text-align: center;
-            font-weight: 500;
-        }
-
-        .step.active {
-            background: #2196f3;
+            padding: 1rem;
+            background: #4CAF50;
             color: white;
-        }
-
-        .step.completed {
-            background: #4caf50;
-            color: white;
+            border-radius: 4px;
+            margin-bottom: 1rem;
         }
 
         .form-section {
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
+            background: white;
             border-radius: 8px;
-        }
-
-        .form-group {
+            padding: 2rem;
             margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        input[type="text"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        textarea {
-            min-height: 100px;
-        }
-
-        .chips-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .chip {
-            background: #e3f2fd;
-            padding: 0.5rem 1rem;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .chip button {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            padding: 0;
-            font-size: 1.2rem;
-        }
-
-        .add-item {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .add-item input {
-            flex: 1;
-        }
-
-        .add-item button {
-            padding: 0.8rem 1.5rem;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-        }
-
-        .button {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .button.primary {
-            background: #2196f3;
-            color: white;
-        }
-
-        .button.secondary {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .preview {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: #1a1a1a;
-            color: #fff;
-            border-radius: 8px;
-        }
-
-        .preview code {
-            white-space: pre-wrap;
-            font-family: monospace;
-        }
-
-        .help-text {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Configuration de l'Activité</h1>
-            <button class="button secondary" onclick="previewConfig()">Aperçu de la configuration</button>
-        </div>
+    <!-- Contenu précédent... -->
 
-        <div class="steps">
-            <div class="step completed">Configuration de base</div>
-            <div class="step active">Paramètres de conversation</div>
-            <div class="step">Validation</div>
-        </div>
-
-        <form id="configForm">
-            <div class="form-section">
-                <h2>Informations générales</h2>
-                <div class="form-group">
-                    <label>Thème de l'activité</label>
-                    <input type="text" name="theme" placeholder="Ex: Au restaurant, À l'hôtel...">
-                </div>
-                <div class="form-group">
-                    <label>Niveau</label>
-                    <select name="niveau">
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Contexte spécifique</label>
-                    <textarea name="contexte" placeholder="Décrivez le contexte spécifique de la conversation..."></textarea>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h2>Configuration du Chatbot</h2>
-                <div class="form-group">
-                    <label>Rôle du chatbot</label>
-                    <input type="text" name="role" placeholder="Ex: serveur, vendeur, ami...">
-                </div>
-                <div class="form-group">
-                    <label>Personnalité</label>
-                    <input type="text" name="personnalite" placeholder="Ex: patient, encourageant, formel...">
-                </div>
-                <div class="form-group">
-                    <label>Objectifs pédagogiques</label>
-                    <div id="objectifs" class="chips-container"></div>
-                    <div class="add-item">
-                        <input type="text" id="newObjectif" placeholder="Ajouter un objectif">
-                        <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h2>Paramètres linguistiques</h2>
-                <div class="form-group">
-                    <label>Structures grammaticales à pratiquer</label>
-                    <div id="structures" class="chips-container"></div>
-                    <div class="add-item">
-                        <input type="text" id="newStructure" placeholder="Ajouter une structure">
-                        <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Vocabulaire cible</label>
-                    <div id="vocabulaire" class="chips-container"></div>
-                    <div class="add-item">
-                        <input type="text" id="newVocab" placeholder="Ajouter du vocabulaire">
-                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h2>Gestion des erreurs et aide</h2>
-                <div class="form-group">
-                    <label>Correction des erreurs</label>
-                    <select name="correction_style">
-                        <option value="immediate">Correction immédiate</option>
-                        <option value="delayed">Correction différée</option>
-                        <option value="selective">Correction sélective</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Niveau d'aide</label>
-                    <select name="aide_niveau">
-                        <option value="minimal">Minimal</option>
-                        <option value="modere">Modéré</option>
-                        <option value="important">Important</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="preview" id="configPreview" style="display: none">
-                <code></code>
-            </div>
-
-            <div class="controls">
-                <button type="button" class="button secondary">Retour</button>
-                <button type="button" class="button primary" onclick="saveConfig()">Continuer</button>
-            </div>
-        </form>
+    <div id="previewPanel" class="preview-panel">
+        <button class="close-btn" onclick="togglePreview()">×</button>
+        <h2>Aperçu de la configuration</h2>
+        <pre><code id="previewCode"></code></pre>
     </div>
 
     <script>
+        // Nouvelle fonction pour le traitement du formulaire
+        function handleForm() {
+            const form = document.getElementById('configForm');
+            const formData = new FormData(form);
+            
+            // Créer l'objet de configuration
+            const config = {
+                theme: formData.get('theme') || '',
+                niveau: formData.get('niveau') || '',
+                contexte: formData.get('contexte') || '',
+                role: formData.get('role') || '',
+                personnalite: formData.get('personnalite') || '',
+                objectifs: getChipsValues('objectifs'),
+                structures: getChipsValues('structures'),
+                vocabulaire: getChipsValues('vocabulaire'),
+                correction_style: formData.get('correction_style') || '',
+                aide_niveau: formData.get('aide_niveau') || ''
+            };
+
+            return config;
+        }
+
+        // Fonction améliorée pour l'aperçu
+        function togglePreview() {
+            const panel = document.getElementById('previewPanel');
+            const config = handleForm();
+            
+            if (panel.classList.contains('visible')) {
+                panel.classList.remove('visible');
+            } else {
+                document.getElementById('previewCode').textContent = 
+                    JSON.stringify(config, null, 2);
+                panel.classList.add('visible');
+            }
+        }
+
+        // Fonction améliorée pour la sauvegarde
+        function saveConfig() {
+            const config = handleForm();
+            localStorage.setItem('currentConfig', JSON.stringify(config));
+            
+            // Afficher le modal de confirmation
+            const successModal = document.createElement('div');
+            successModal.className = 'modal';
+            successModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="success-message">
+                        Configuration sauvegardée avec succès !
+                    </div>
+                    <div style="text-align: center;">
+                        <button onclick="createNewActivity()" class="button primary">
+                            Créer une nouvelle activité
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(successModal);
+            successModal.style.display = 'flex';
+        }
+
+        function createNewActivity() {
+            document.getElementById('configForm').reset();
+            document.querySelector('.modal').remove();
+            // Réinitialiser les chips
+            ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+        }
+
+        // Mettre à jour les fonctions existantes pour les chips
         function addChip(containerId, inputId) {
             const container = document.getElementById(containerId);
             const input = document.getElementById(inputId);
@@ -316,63 +175,8 @@
 
         function getChipsValues(containerId) {
             return Array.from(document.getElementById(containerId).children)
-                .map(chip => chip.textContent.trim().replace('×', '').trim());
-        }
-
-        function getFormData() {
-            const formData = new FormData(document.getElementById('configForm'));
-            const config = {
-                informations_generales: {
-                    theme: formData.get('theme'),
-                    niveau: formData.get('niveau'),
-                    contexte: formData.get('contexte')
-                },
-                configuration_chatbot: {
-                    role: formData.get('role'),
-                    personnalite: formData.get('personnalite'),
-                    objectifs: getChipsValues('objectifs')
-                },
-                parametres_linguistiques: {
-                    structures_grammaticales: getChipsValues('structures'),
-                    vocabulaire: getChipsValues('vocabulaire')
-                },
-                gestion_erreurs: {
-                    correction_style: formData.get('correction_style'),
-                    niveau_aide: formData.get('aide_niveau')
-                }
-            };
-            
-            return config;
-        }
-
-        function previewConfig() {
-            const preview = document.getElementById('configPreview');
-            const config = getFormData();
-            
-            // Formater le JSON pour l'affichage
-            const formattedConfig = JSON.stringify(config, null, 2);
-            
-            // Mettre à jour l'affichage
-            preview.querySelector('code').textContent = formattedConfig;
-            
-            // Basculer l'affichage
-            if (preview.style.display === 'none') {
-                preview.style.display = 'block';
-                // Faire défiler jusqu'à l'aperçu
-                preview.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                preview.style.display = 'none';
-            }
-        }
-
-        function saveConfig() {
-            const config = getFormData();
-            console.log('Configuration sauvegardée:', config);
-            
-            // Afficher un message de confirmation
-            alert('Configuration sauvegardée avec succès !');
-            
-            // Ici nous ajouterons plus tard la logique de sauvegarde dans une base de données
+                .map(chip => chip.textContent.trim().replace('×', ''))
+                .filter(text => text.length > 0);
         }
     </script>
 </body>
