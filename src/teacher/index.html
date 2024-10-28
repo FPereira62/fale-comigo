@@ -3,81 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord - Português Prático</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Configuration d'Activité - Português Prático</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+            background: #f0f2f5;
+            color: #333;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #1a1a1a;
+        }
+
+        .steps {
+            display: flex;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .step {
+            flex: 1;
+            padding: 1rem;
+            background: #e9ecef;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .step.active {
+            background: #2196f3;
+            color: white;
+        }
+
+        .step.completed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .chip {
+            background: #e3f2fd;
+            padding: 0.5rem 1rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chip button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1.2rem;
+        }
+
+        .add-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .add-item input {
+            flex: 1;
+        }
+
+        .add-item button {
+            padding: 0.8rem 1.5rem;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .button.primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .button.secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .preview {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #1a1a1a;
+            color: #fff;
+            border-radius: 8px;
+        }
+
+        .preview code {
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .help-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard">
+    <div class="container">
         <div class="header">
-            <h1>Tableau de bord</h1>
-            <button onclick="generateQRCode()" class="primary">Générer QR Code</button>
+            <h1>Configuration de l'Activité</h1>
+            <button class="button secondary" onclick="previewConfig()">Aperçu de la configuration</button>
         </div>
 
-        <div class="main-content">
-            <div class="sidebar">
-                <h2>Navigation</h2>
-                <ul>
-                    <li><a href="#" class="active" onclick="showSection('activities')">Activités</a></li>
-                    <li><a href="#" onclick="showSection('create')">Créer une activité</a></li>
-                </ul>
+        <div class="steps">
+            <div class="step completed">Configuration de base</div>
+            <div class="step active">Paramètres de conversation</div>
+            <div class="step">Validation</div>
+        </div>
+
+        <form id="configForm">
+            <div class="form-section">
+                <h2>Informations générales</h2>
+                <div class="form-group">
+                    <label>Thème de l'activité</label>
+                    <input type="text" name="theme" placeholder="Ex: Au restaurant, À l'hôtel...">
+                </div>
+                <div class="form-group">
+                    <label>Niveau</label>
+                    <select name="niveau">
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                        <option value="B1">B1</option>
+                        <option value="B2">B2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Contexte spécifique</label>
+                    <textarea name="contexte" placeholder="Décrivez le contexte spécifique de la conversation..."></textarea>
+                </div>
             </div>
 
-            <div class="content">
-                <div id="activities-section">
-                    <div class="activities-header">
-                        <h2>Mes Activités</h2>
-                        <button onclick="showSection('create')" class="secondary">+ Nouvelle activité</button>
+            <div class="form-section">
+                <h2>Configuration du Chatbot</h2>
+                <div class="form-group">
+                    <label>Rôle du chatbot</label>
+                    <input type="text" name="role" placeholder="Ex: serveur, vendeur, ami...">
+                </div>
+                <div class="form-group">
+                    <label>Personnalité</label>
+                    <input type="text" name="personnalite" placeholder="Ex: patient, encourageant, formel...">
+                </div>
+                <div class="form-group">
+                    <label>Objectifs pédagogiques</label>
+                    <div id="objectifs" class="chips-container"></div>
+                    <div class="add-item">
+                        <input type="text" id="newObjectif" placeholder="Ajouter un objectif">
+                        <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
                     </div>
-                    <div id="activities-list"></div>
-                </div>
-
-                <div id="create-section" style="display: none;">
-                    <h2>Créer une nouvelle activité</h2>
-                    <form id="activity-form" onsubmit="saveActivity(event)">
-                        <div class="form-group">
-                            <label>Titre</label>
-                            <input type="text" name="title" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea name="description" rows="3" required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Niveau</label>
-                            <select name="level" required>
-                                <option value="A1">A1</option>
-                                <option value="A2">A2</option>
-                                <option value="B1">B1</option>
-                                <option value="B2">B2</option>
-                            </select>
-                        </div>
-
-                        <div class="phrases-container">
-                            <h3>Phrases et Réponses</h3>
-                            <div id="phrases-list">
-                                <div class="phrase-pair">
-                                    <div>
-                                        <label>Phrase</label>
-                                        <input type="text" name="phrases[]" required>
-                                    </div>
-                                    <div>
-                                        <label>Réponse attendue</label>
-                                        <input type="text" name="responses[]" required>
-                                    </div>
-                                    <button type="button" class="delete" onclick="removePair(this)">×</button>
-                                </div>
-                            </div>
-                            <button type="button" class="secondary" onclick="addPhrasePair()">+ Ajouter une phrase</button>
-                        </div>
-
-                        <button type="submit" class="primary">Enregistrer l'activité</button>
-                    </form>
                 </div>
             </div>
-        </div>
+
+            <div class="form-section">
+                <h2>Paramètres linguistiques</h2>
+                <div class="form-group">
+                    <label>Structures grammaticales à pratiquer</label>
+                    <div id="structures" class="chips-container"></div>
+                    <div class="add-item">
+                        <input type="text" id="newStructure" placeholder="Ajouter une structure">
+                        <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Vocabulaire cible</label>
+                    <div id="vocabulaire" class="chips-container"></div>
+                    <div class="add-item">
+                        <input type="text" id="newVocab" placeholder="Ajouter du vocabulaire">
+                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Gestion des erreurs et aide</h2>
+                <div class="form-group">
+                    <label>Correction des erreurs</label>
+                    <select name="correction_style">
+                        <option value="immediate">Correction immédiate</option>
+                        <option value="delayed">Correction différée</option>
+                        <option value="selective">Correction sélective</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Niveau d'aide</label>
+                    <select name="aide_niveau">
+                        <option value="minimal">Minimal</option>
+                        <option value="modere">Modéré</option>
+                        <option value="important">Important</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="preview" id="configPreview" style="display: none">
+                <code></code>
+            </div>
+
+            <div class="controls">
+                <button type="button" class="button secondary">Retour</button>
+                <button type="button" class="button primary" onclick="saveConfig()">Continuer</button>
+            </div>
+        </form>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        function addChip(containerId, inputId) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            const value = input.value.trim();
+            
+            if (value) {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML = `
+                    ${value}
+                    <button type="button" onclick="this.parentElement.remove()">×</button>
+                `;
+                container.appendChild(chip);
+                input.value = '';
+            }
+        }
+
+        function getChipsValues(containerId) {
+            return Array.from(document.getElementById(containerId).children)
+                .map(chip => chip.textContent.trim().replace('×', ''));
+        }
+
+        function getFormData() {
+            const formData = new FormData(document.getElementById('configForm'));
+            const config = Object.fromEntries(formData.entries());
+            
+            config.objectifs = getChipsValues('objectifs');
+            config.structures = getChipsValues('structures');
+            config.vocabulaire = getChipsValues('vocabulaire');
+            
+            return config;
+        }
+
+        function previewConfig() {
+            const preview = document.getElementById('configPreview');
+            const config = getFormData();
+            preview.querySelector('code').textContent = JSON.stringify(config, null, 2);
+            preview.style.display = preview.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveConfig() {
+            const config = getFormData();
+            console.log('Configuration sauvegardée:', config);
+            // Ici nous ajouterons la logique de sauvegarde
+        }
+    </script>
 </body>
 </html>
