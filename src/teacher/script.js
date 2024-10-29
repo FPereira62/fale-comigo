@@ -1,6 +1,3 @@
-let currentStep = 1;
-const totalSteps = 3;
-
 function addChip(containerId, inputId) {
     const container = document.getElementById(containerId);
     const input = document.getElementById(inputId);
@@ -81,8 +78,7 @@ function verifierConfig() {
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
     modal.style.display = 'flex';
-    // Force un reflow pour permettre l'animation
-    modal.offsetHeight;
+    modal.offsetHeight; // Force un reflow
     modal.classList.add('visible');
 }
 
@@ -91,7 +87,7 @@ function closeModal(modalId) {
     modal.classList.remove('visible');
     setTimeout(() => {
         modal.style.display = 'none';
-    }, 300); // Correspond à la durée de la transition
+    }, 300);
 }
 
 function resetForm() {
@@ -131,6 +127,7 @@ document.getElementById('configForm').addEventListener('submit', function(e) {
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les boutons d'ajout
     ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
         updateAddButton(id);
     });
