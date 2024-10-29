@@ -1,107 +1,137 @@
-// Remplacez tout le contenu de la balise <script> par ce qui suit :
-<script>
-    let currentStep = 1;
-    const totalSteps = 3;
+let currentStep = 1;
+const totalSteps = 3;
 
-    function addChip(containerId, inputId) {
-        const container = document.getElementById(containerId);
-        const input = document.getElementById(inputId);
-        const value = input.value.trim();
-        
-        if (value) {
-            const chip = document.createElement('div');
-            chip.className = 'chip';
-            chip.innerHTML = `
-                ${value}
-                <button type="button" onclick="this.parentElement.remove()">×</button>
-            `;
-            container.appendChild(chip);
-            input.value = '';
-        }
+function addChip(containerId, inputId) {
+    const container = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    const value = input.value.trim();
+    
+    if (value) {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `
+            ${value}
+            <button type="button" onclick="removeChip(this)">&times;</button>
+        `;
+        container.appendChild(chip);
+        input.value = '';
+        updateAddButton(containerId);
     }
+}
 
-    function getChipsValues(containerId) {
-        return Array.from(document.getElementById(containerId).children)
-            .map(chip => chip.textContent.trim().replace('×', '').trim())
-            .filter(text => text.length > 0); // Filtrer les chaînes vides
+function removeChip(button) {
+    const chip = button.parentElement;
+    const container = chip.parentElement;
+    chip.remove();
+    updateAddButton(container.id);
+}
+
+function updateAddButton(containerId) {
+    const container = document.getElementById(containerId);
+    const addButton = container.nextElementSibling.querySelector('button');
+    
+    if (container.children.length === 0) {
+        addButton.classList.add('empty');
+    } else {
+        addButton.classList.remove('empty');
     }
+}
 
-    function getFormData() {
-        const formData = new FormData(document.getElementById('configForm'));
-        const config = {
-            theme: formData.get('theme'),
-            niveau: formData.get('niveau'),
-            contexte: formData.get('contexte'),
-            role: formData.get('role'),
-            personnalite: formData.get('personnalite'),
-            correction_style: formData.get('correction_style'),
-            aide_niveau: formData.get('aide_niveau'),
-            objectifs: getChipsValues('objectifs'),
-            structures: getChipsValues('structures'),
-            vocabulaire: getChipsValues('vocabulaire')
-        };
-        
-        return config;
-    }
+function getChipsValues(containerId) {
+    return Array.from(document.getElementById(containerId).children)
+        .map(chip => chip.textContent.trim().replace('×', ''))
+        .filter(text => text.length > 0);
+}
 
-    function previewConfig() {
-        const preview = document.getElementById('configPreview');
-        const config = getFormData();
-        
-        // Formater le JSON pour l'affichage
-        const formattedConfig = JSON.stringify(config, null, 2);
-        
-        // Mettre à jour l'affichage
-        preview.querySelector('code').textContent = formattedConfig;
-        
-        // Basculer l'affichage
-        if (preview.style.display === 'none') {
-            preview.style.display = 'block';
-            preview.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            preview.style.display = 'none';
-        }
-    }
+function verifierConfig() {
+    const form = document.getElementById('configForm');
+    const formData = new FormData(form);
+    const config = {
+        ...Object.fromEntries(formData.entries()),
+        objectifs: getChipsValues('objectifs'),
+        structures: getChipsValues('structures'),
+        vocabulaire: getChipsValues('vocabulaire')
+    };
 
-    function saveConfig() {
-        const config = getFormData();
-        localStorage.setItem('currentConfig', JSON.stringify(config));
-        alert('Configuration sauvegardée !');
-        // Ici, vous pourriez rediriger vers la page suivante
-        // window.location.href = '/next-page';
-    }
+    document.getElementById('review-info').innerHTML = `
+        <p><strong>Thème:</strong> ${config.theme}</p>
+        <p><strong>Niveau:</strong> ${config.niveau}</p>
+        <p><strong>Contexte:</strong> ${config.contexte}</p>
+    `;
 
-    function goBack() {
-        if (currentStep > 1) {
-            currentStep--;
-            updateSteps();
-        }
-    }
+    document.getElementById('review-chatbot').innerHTML = `
+        <p><strong>Rôle:</strong> ${config.role}</p>
+        <p><strong>Personnalité:</strong> ${config.personnalite}</p>
+        <p><strong>Objectifs:</strong></p>
+        <div>${config.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}</div>
+    `;
 
-    function goForward() {
-        if (currentStep < totalSteps) {
-            currentStep++;
-            updateSteps();
-        } else {
-            saveConfig();
-        }
-    }
+    document.getElementById('review-params').innerHTML = `
+        <p><strong>Structures grammaticales:</strong></p>
+        <div>${config.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}</div>
+        <p><strong>Vocabulaire:</strong></p>
+        <div>${config.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}</div>
+        <p><strong>Style de correction:</strong> ${config.correction_style}</p>
+        <p><strong>Niveau d'aide:</strong> ${config.aide_niveau}</p>
+    `;
 
-    function updateSteps() {
-        const steps = document.querySelectorAll('.step');
-        steps.forEach((step, index) => {
-            step.classList.remove('active', 'completed');
-            if (index + 1 === currentStep) {
-                step.classList.add('active');
-            } else if (index + 1 < currentStep) {
-                step.classList.add('completed');
-            }
-        });
-    }
+    showModal('verificationModal');
+}
 
-    // Écouteurs d'événements pour les boutons
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelector('button.secondary').addEventListener('click', goBack);
-        document.querySelector('button.primary').addEventListener('click', goForward);
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'flex';
+    // Force un reflow pour permettre l'animation
+    modal.offsetHeight;
+    modal.classList.add('visible');
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('visible');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300); // Correspond à la durée de la transition
+}
+
+function resetForm() {
+    document.getElementById('configForm').reset();
+    ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+        updateAddButton(id);
     });
-</script>
+    closeModal('successModal');
+}
+
+// Gestion du formulaire
+document.getElementById('configForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const config = {
+        ...Object.fromEntries(formData.entries()),
+        objectifs: getChipsValues('objectifs'),
+        structures: getChipsValues('structures'),
+        vocabulaire: getChipsValues('vocabulaire')
+    };
+
+    localStorage.setItem('currentConfig', JSON.stringify(config));
+    closeModal('verificationModal');
+    showModal('successModal');
+});
+
+// Permettre l'ajout de chips avec la touche Entrée
+['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
+    document.getElementById(inputId).addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addChip(this.id.replace('new', '').toLowerCase(), this.id);
+        }
+    });
+});
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+        updateAddButton(id);
+    });
+});
