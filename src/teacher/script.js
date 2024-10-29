@@ -131,4 +131,32 @@ document.addEventListener('DOMContentLoaded', function() {
     ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
         updateAddButton(id);
     });
+
+    // Gestionnaire pour le bouton "Vérifier"
+    document.getElementById('verifyButton').addEventListener('click', verifierConfig);
+
+    // Gestionnaire pour le formulaire (bouton Sauvegarder)
+    document.getElementById('configForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const config = {
+            ...Object.fromEntries(formData.entries()),
+            objectifs: getChipsValues('objectifs'),
+            structures: getChipsValues('structures'),
+            vocabulaire: getChipsValues('vocabulaire')
+        };
+
+        localStorage.setItem('currentConfig', JSON.stringify(config));
+        showModal('successModal');
+    });
+
+    // Permettre l'ajout de chips avec la touche Entrée
+    ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
+        document.getElementById(inputId).addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addChip(this.id.replace('new', '').toLowerCase(), this.id);
+            }
+        });
+    });
 });
