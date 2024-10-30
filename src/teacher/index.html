@@ -5,7 +5,338 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuration d'Activité - Português Prático</title>
     <style>
-        /* Tous les styles existants restent identiques */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+            background: #f0f2f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            color: #2c3e50;
+            font-size: 1.8rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.5rem;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: white;
+        }
+
+        .chip {
+            background: #e3f2fd;
+            padding: 0.5rem 1rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chip button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .chip button:hover {
+            color: #d32f2f;
+        }
+
+        .add-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .add-item input {
+            flex: 1;
+        }
+
+        .add-item button {
+            width: 40px;
+            height: 40px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .add-item button:hover {
+            background: #1976d2;
+            transform: scale(1.05);
+        }
+
+        .add-item button:active {
+            transform: scale(0.95);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .button, button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button.primary, button.primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .button.secondary, button.secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.visible {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal.visible .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: #666;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-section h3 {
+            color: #2196f3;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .success-modal-content {
+            text-align: center;
+            padding: 1rem 0 2rem 0;
+        }
+
+        .feedback {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            animation: slideDown 0.3s ease;
+        }
+
+        .feedback.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .future-feature-notice {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+            animation: slideUp 0.3s ease 0.1s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #e3f2fd;
+            border-radius: 4px;
+            margin: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
     </style>
 </head>
 <body>
@@ -47,11 +378,10 @@
                 </div>
                 <div class="form-group">
                     <label>Objectifs pédagogiques</label>
-                    <div id="objectifs" class="chips-container" aria-label="Liste des objectifs pédagogiques"></div>
+                    <div id="objectifs" class="chips-container"></div>
                     <div class="add-item">
-                        <label for="newObjectif" class="sr-only">Ajouter un objectif pédagogique</label>
                         <input type="text" id="newObjectif" placeholder="Ex: Intégrer les verbes au présent...">
-                        <button type="button" onclick="addChip('objectifs', 'newObjectif')" class="empty" aria-label="Ajouter l'objectif">+</button>
+                        <button type="button" onclick="addChip('objectifs', 'newObjectif')" class="empty">+</button>
                     </div>
                 </div>
             </div>
@@ -60,20 +390,18 @@
                 <h2>Paramètres linguistiques</h2>
                 <div class="form-group">
                     <label>Structures grammaticales</label>
-                    <div id="structures" class="chips-container" aria-label="Liste des structures grammaticales"></div>
+                    <div id="structures" class="chips-container"></div>
                     <div class="add-item">
-                        <label for="newStructure" class="sr-only">Ajouter une structure grammaticale</label>
                         <input type="text" id="newStructure" placeholder="Ex: Verbes au présent...">
-                        <button type="button" onclick="addChip('structures', 'newStructure')" class="empty" aria-label="Ajouter la structure">+</button>
+                        <button type="button" onclick="addChip('structures', 'newStructure')" class="empty">+</button>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Vocabulaire cible</label>
-                    <div id="vocabulaire" class="chips-container" aria-label="Liste du vocabulaire cible"></div>
+                    <div id="vocabulaire" class="chips-container"></div>
                     <div class="add-item">
-                        <label for="newVocab" class="sr-only">Ajouter du vocabulaire</label>
                         <input type="text" id="newVocab" placeholder="Ex: Noms des pays...">
-                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')" class="empty" aria-label="Ajouter le vocabulaire">+</button>
+                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')" class="empty">+</button>
                     </div>
                 </div>
             </div>
@@ -99,18 +427,18 @@
             </div>
 
             <div class="controls">
-                <button type="button" id="verifyButton" onclick="verifierConfig()" class="secondary" aria-label="Vérifier la configuration">Vérifier</button>
-                <button type="submit" id="saveButton" class="primary" aria-label="Sauvegarder la configuration">Sauvegarder</button>
+                <button type="button" onclick="verifierConfig()" class="secondary">Vérifier</button>
+                <button type="submit" class="primary">Sauvegarder</button>
             </div>
         </form>
     </div>
 
     <!-- Modal de vérification -->
-    <div id="verificationModal" class="modal" role="dialog" aria-labelledby="verificationTitle">
+    <div id="verificationModal" class="modal" role="dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="verificationTitle">Vérification de la configuration</h2>
-                <button class="modal-close" onclick="closeModal('verificationModal')" aria-label="Fermer la fenêtre de vérification">&times;</button>
+                <h2>Vérification de la configuration</h2>
+                <button class="modal-close" onclick="closeModal('verificationModal')">&times;</button>
             </div>
             <div class="modal-section">
                 <h3>Informations générales</h3>
@@ -125,18 +453,18 @@
                 <div id="review-params"></div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('verificationModal')" class="secondary" aria-label="Modifier la configuration">Modifier</button>
-                <button onclick="document.getElementById('configForm').requestSubmit()" class="primary" aria-label="Confirmer la configuration">Confirmer</button>
+                <button onclick="closeModal('verificationModal')" class="secondary">Modifier</button>
+                <button onclick="document.getElementById('configForm').requestSubmit()" class="primary">Confirmer</button>
             </div>
         </div>
     </div>
 
     <!-- Modal de succès -->
-    <div id="successModal" class="modal" role="dialog" aria-labelledby="successTitle">
+    <div id="successModal" class="modal" role="dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="successTitle">Configuration sauvegardée</h2>
-                <button class="modal-close" onclick="closeModal('successModal')" aria-label="Fermer la fenêtre">&times;</button>
+                <h2>Configuration sauvegardée</h2>
+                <button class="modal-close" onclick="closeModal('successModal')">&times;</button>
             </div>
             <div class="success-modal-content">
                 <div class="feedback success">
@@ -148,8 +476,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button onclick="resetForm()" class="secondary" aria-label="Créer une nouvelle activité">Nouvelle activité</button>
-                <button onclick="closeModal('successModal')" class="primary" aria-label="Fermer">Fermer</button>
+                <button onclick="resetForm()" class="secondary">Nouvelle activité</button>
+                <button onclick="closeModal('successModal')" class="primary">Fermer</button>
             </div>
         </div>
     </div>
