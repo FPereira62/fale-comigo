@@ -435,8 +435,8 @@
             </div>
 
             <div class="controls">
-                <button type="button" onclick="verifierConfig()" class="secondary" id="verifyButton">Vérifier</button>
-                <button type="submit" class="primary" id="saveButton">Sauvegarder</button>
+                <button type="button" onclick="verifierConfig()" class="secondary" aria-label="Vérifier la configuration">Vérifier</button>
+                <button type="submit" class="primary" aria-label="Sauvegarder la configuration">Sauvegarder</button>
             </div>
         </form>
     </div>
@@ -472,7 +472,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Configuration sauvegardée</h2>
-                <button class="modal-close" onclick="closeModal('successModal')">&times;</button>
+                <button class="modal-close" onclick="closeModal('successModal')" aria-label="Fermer la fenêtre">×</button>
+                <button onclick="resetForm()" class="secondary" aria-label="Créer une nouvelle activité">Nouvelle activité</button>
+                <button onclick="closeModal('successModal')" class="primary" aria-label="Fermer">Fermer</button>
             </div>
             <div class="success-modal-content">
                 <div class="feedback success">
