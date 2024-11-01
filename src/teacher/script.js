@@ -1,13 +1,54 @@
-// Les fonctions existantes pour les chips restent identiques (addChip, removeChip, updateAddButton, getChipsValues)
+// Fonctions de gestion des chips (tags)
+function addChip(containerId, inputId) {
+    const container = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    const value = input.value.trim();
+    
+    if (value) {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `
+            ${value}
+            <button type="button" onclick="removeChip(this)">&times;</button>
+        `;
+        container.appendChild(chip);
+        input.value = '';
+        updateAddButton(containerId);
+    }
+}
 
-// Nouvelle fonction pour sauvegarder une configuration dans Firestore
-async function saveConfig(config) {
+function removeChip(button) {
+    const chip = button.parentElement;
+    const container = chip.parentElement;
+    chip.remove();
+    updateAddButton(container.id);
+}
+
+function updateAddButton(containerId) {
+    const container = document.getElementById(containerId);
+    const addButton = container.nextElementSibling.querySelector('button');
+    
+    if (container.children.length === 0) {
+        addButton.classList.add('empty');
+    } else {
+        addButton.classList.remove('empty');
+    }
+}
+
+function getChipsValues(containerId) {
+    return Array.from(document.getElementById(containerId).children)
+        .map(chip => chip.textContent.trim().replace('×', ''))
+        .filter(text => text.length > 0);
+}
+
+// Fonctions de gestion Firestore
+async function saveToFirestore(config) {
     try {
         const docRef = await db.collection('activites').add({
             ...config,
             dateCreation: firebase.firestore.FieldValue.serverTimestamp()
         });
-        console.log("Configuration sauvegardée avec ID: ", docRef.id);
+        console.log("Document sauvegardé avec ID: ", docRef.id);
         return true;
     } catch (error) {
         console.error("Erreur lors de la sauvegarde: ", error);
@@ -15,21 +56,23 @@ async function saveConfig(config) {
     }
 }
 
-// Nouvelle fonction pour récupérer toutes les activités
-async function getActivities() {
-    try {
-        const snapshot = await db.collection('activites').orderBy('dateCreation', 'desc').get();
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-    } catch (error) {
-        console.error("Erreur lors de la récupération des activités: ", error);
-        return [];
-    }
+// Fonctions de gestion des modales
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'flex';
+    modal.offsetHeight; // Force un reflow
+    modal.classList.add('visible');
 }
 
-// Modifier la fonction verifierConfig pour utiliser ces nouvelles fonctions
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('visible');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// Fonction de vérification
 function verifierConfig() {
     const form = document.getElementById('configForm');
     const formData = new FormData(form);
@@ -65,28 +108,7 @@ function verifierConfig() {
     showModal('verificationModal');
 }
 
-// Modifier le gestionnaire du formulaire
-document.getElementById('configForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const config = {
-        ...Object.fromEntries(formData.entries()),
-        objectifs: getChipsValues('objectifs'),
-        structures: getChipsValues('structures'),
-        vocabulaire: getChipsValues('vocabulaire')
-    };
-
-    closeModal('verificationModal');
-    
-    const saveSuccess = await saveConfig(config);
-    if (saveSuccess) {
-        showModal('successModal');
-    } else {
-        alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.');
-    }
-});
-
-// Nouvelle fonction pour réinitialiser le formulaire
+// Fonction de réinitialisation du formulaire
 function resetForm() {
     document.getElementById('configForm').reset();
     ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
@@ -96,16 +118,37 @@ function resetForm() {
     closeModal('successModal');
 }
 
-// Les autres fonctions (showModal, closeModal, etc.) restent identiques
-
-// Initialisation
+// Gestionnaires d'événements
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialiser les boutons d'ajout
+    // Initialisation des chips containers
     ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
         updateAddButton(id);
+        const container = document.getElementById(id);
+        container.setAttribute('role', 'list');
     });
 
-    // Permettre l'ajout de chips avec la touche Entrée
+    // Gestionnaire du formulaire
+    document.getElementById('configForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const config = {
+            ...Object.fromEntries(formData.entries()),
+            objectifs: getChipsValues('objectifs'),
+            structures: getChipsValues('structures'),
+            vocabulaire: getChipsValues('vocabulaire')
+        };
+
+        closeModal('verificationModal');
+        const saveSuccess = await saveToFirestore(config);
+        
+        if (saveSuccess) {
+            showModal('successModal');
+        } else {
+            alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.');
+        }
+    });
+
+    // Gestion de l'ajout de chips avec la touche Entrée
     ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
         document.getElementById(inputId).addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
