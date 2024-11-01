@@ -1,3 +1,4 @@
+// Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBVAVVcpmicOnyXYBydEW4KfCu0B0ukNe4",
   authDomain: "fale-comigo-d4522.firebaseapp.com",
@@ -10,6 +11,4 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
-// Initialize Firestore
 const db = firebase.firestore();
