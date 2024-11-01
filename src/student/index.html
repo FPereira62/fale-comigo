@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Português Prático</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fale Comigo - Conversation</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,8 +12,10 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             background: #f0f2f5;
+            color: #333;
+            line-height: 1.5;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -23,22 +25,17 @@
             background: white;
             padding: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            color: #333;
-        }
-
-        .level-badge {
-            background: #4CAF50;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
         }
 
         .activity-info {
@@ -49,37 +46,48 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .chat {
+        .level-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .chat-container {
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
             margin-bottom: 80px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .message {
-            max-width: 85%;
-            margin: 0.5rem 0;
-            padding: 0.8rem;
+            margin-bottom: 1rem;
+            max-width: 80%;
+            padding: 1rem;
             border-radius: 12px;
-            animation: fadeIn 0.3s ease;
+            position: relative;
         }
 
-        .assistant {
+        .message.assistant {
             background: #e3f2fd;
             margin-right: auto;
+            border-bottom-left-radius: 4px;
         }
 
-        .user {
+        .message.user {
             background: #f5f5f5;
             margin-left: auto;
+            border-bottom-right-radius: 4px;
         }
 
-        .system {
+        .message.system {
             background: #fff3e0;
             margin: 1rem auto;
             text-align: center;
-            font-size: 0.9rem;
-            color: #666;
+            max-width: 90%;
         }
 
         .controls {
@@ -87,27 +95,12 @@
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 1rem;
             background: white;
+            padding: 1rem;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             display: flex;
             justify-content: center;
-            gap: 1rem;
-        }
-
-        .button {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 24px;
-            font-size: 1rem;
-            background: #2196f3;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .button:active {
-            transform: scale(0.95);
+            align-items: center;
         }
 
         .mic-button {
@@ -116,10 +109,14 @@
             border-radius: 50%;
             background: #2196f3;
             color: white;
+            border: none;
             font-size: 24px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .mic-button.recording {
@@ -127,191 +124,80 @@
             transform: scale(1.1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .start-button {
+            padding: 1rem 2rem;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .progress-bar {
             height: 4px;
             background: #ddd;
-            margin: 1rem;
-            border-radius: 2px;
-            overflow: hidden;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
 
         .progress {
             height: 100%;
             background: #2196f3;
-            width: 0;
+            width: 0%;
             transition: width 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .mic-button.waiting {
+            animation: pulse 2s infinite;
+        }
+
+        .status {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 id="activity-title">Au restaurant</h1>
-        <span class="level-badge">A1</span>
+        <div class="header-content">
+            <h1 id="activity-title">Chargement...</h1>
+            <span id="level-badge" class="level-badge">A1</span>
+        </div>
     </div>
 
     <div class="activity-info">
-        <p id="activity-description">Pratiquez une conversation au restaurant</p>
+        <p id="activity-context">Chargement du contexte...</p>
     </div>
 
-    <div class="progress-bar">
-        <div id="progress" class="progress"></div>
-    </div>
-
-    <div id="chat" class="chat">
-        <div class="message system">Bienvenue ! Appuyez sur Commencer pour débuter l'exercice.</div>
+    <div class="chat-container" id="chat">
+        <div class="message system">
+            Bienvenue ! Cliquez sur "Commencer" pour débuter l'exercice.
+        </div>
     </div>
 
     <div class="controls">
-        <button id="startButton" class="button">Commencer</button>
+        <div class="status" id="status"></div>
+        <button id="startButton" class="start-button">Commencer</button>
         <button id="micButton" class="mic-button" style="display: none;">🎤</button>
     </div>
 
-    <script>
-        // Activités préchargées
-        const activities = [
-            {
-                title: "Au restaurant",
-                description: "Pratiquez une conversation au restaurant",
-                level: "A1",
-                phrases: [
-                    "Bom dia, eu queria fazer um pedido",
-                    "Eu quero um café, por favor",
-                    "Quanto custa?",
-                    "A conta, por favor"
-                ],
-                responses: [
-                    "Bom dia, o que você deseja?",
-                    "Pois não, um café",
-                    "São cinco reais",
-                    "Aqui está a conta"
-                ]
-            }
-        ];
-
-        // Variables globales
-        let currentActivity = activities[0];
-        let currentPhraseIndex = 0;
-        let synth = window.speechSynthesis;
-        let recognition = null;
-        let isRecording = false;
-
-        // Ajouter un message au chat
-        function addMessage(type, text) {
-            const chat = document.getElementById('chat');
-            const message = document.createElement('div');
-            message.className = `message ${type}`;
-            message.textContent = text;
-            chat.appendChild(message);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        // Mettre à jour la barre de progression
-        function updateProgress() {
-            const progress = document.getElementById('progress');
-            const percentage = (currentPhraseIndex / currentActivity.phrases.length) * 100;
-            progress.style.width = `${percentage}%`;
-        }
-
-        // Parler un texte
-        function speak(text) {
-            return new Promise((resolve) => {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'pt-BR';
-                utterance.onend = resolve;
-                addMessage('assistant', text);
-                synth.speak(utterance);
-            });
-        }
-
-        // Initialiser la reconnaissance vocale
-        function initSpeechRecognition() {
-            if (!('webkitSpeechRecognition' in window)) {
-                addMessage('system', 'La reconnaissance vocale n\'est pas supportée');
-                return;
-            }
-
-            recognition = new webkitSpeechRecognition();
-            recognition.lang = 'pt-BR';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            recognition.onstart = () => {
-                isRecording = true;
-                document.getElementById('micButton').classList.add('recording');
-            };
-
-            recognition.onend = () => {
-                isRecording = false;
-                document.getElementById('micButton').classList.remove('recording');
-            };
-
-            recognition.onresult = async (event) => {
-                const text = event.results[0][0].transcript;
-                addMessage('user', text);
-                
-                const currentPhrase = currentActivity.phrases[currentPhraseIndex];
-                const currentResponse = currentActivity.responses[currentPhraseIndex];
-                
-                if (text.toLowerCase().includes(currentResponse.toLowerCase()) ||
-                    currentResponse.toLowerCase().includes(text.toLowerCase())) {
-                    addMessage('system', '✓ Très bien !');
-                    currentPhraseIndex++;
-                    updateProgress();
-                    
-                    if (currentPhraseIndex < currentActivity.phrases.length) {
-                        setTimeout(() => {
-                            speak(currentActivity.phrases[currentPhraseIndex]);
-                        }, 1000);
-                    } else {
-                        addMessage('system', 'Félicitations ! Vous avez terminé l\'exercice.');
-                        document.getElementById('micButton').style.display = 'none';
-                        document.getElementById('startButton').style.display = 'block';
-                        document.getElementById('startButton').textContent = 'Recommencer';
-                    }
-                } else {
-                    addMessage('system', '✗ Essayez encore');
-                    setTimeout(() => {
-                        speak(currentPhrase);
-                    }, 1000);
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Erreur:', event.error);
-                addMessage('system', 'Erreur de reconnaissance vocale');
-            };
-        }
-
-        // Gérer le démarrage de l'exercice
-        async function startExercise() {
-            document.getElementById('startButton').style.display = 'none';
-            document.getElementById('micButton').style.display = 'block';
-            currentPhraseIndex = 0;
-            updateProgress();
-            
-            addMessage('system', 'Commençons l\'exercice. Écoutez et répétez.');
-            await speak(currentActivity.phrases[0]);
-        }
-
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', () => {
-            initSpeechRecognition();
-            
-            document.getElementById('startButton').addEventListener('click', startExercise);
-            
-            document.getElementById('micButton').addEventListener('click', () => {
-                if (isRecording) {
-                    recognition.stop();
-                } else {
-                    recognition.start();
-                }
-            });
-        });
-    </script>
+    <!-- Scripts Firebase seront ajoutés ici -->
+    <script src="script.js"></script>
 </body>
 </html>
