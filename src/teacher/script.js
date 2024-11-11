@@ -139,7 +139,7 @@ function resetForm() {
 
 // Gestion de la prévisualisation du chat
 function updateFormState() {
-    const formData = {
+    window.currentConfig = {
         theme: document.getElementById('theme').value,
         niveau: document.getElementById('niveau').value,
         contexte: document.getElementById('contexte').value,
@@ -152,11 +152,7 @@ function updateFormState() {
         aide_niveau: document.getElementById('aide_niveau').value
     };
 
-    if (window.chatbotPreview) {
-        window.chatbotPreview.config = formData;
-    } else {
-        initializeChatPreview(formData);
-    }
+    initializeChatPreview(window.currentConfig);
 }
 
 function initializeChatPreview(config) {
