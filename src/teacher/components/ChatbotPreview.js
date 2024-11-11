@@ -1,122 +1,151 @@
-import React, { useState, useEffect } from 'react';
-import { Mic, MicOff, Send } from 'lucide-react';
-
-const ChatbotPreview = ({ config = {} }) => {
-  const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
-
-  const defaultConfig = {
-    theme: 'Conversation générale',
-    role: 'assistant',
-    personnalite: 'amical',
-    niveau: 'A1',
-    correction_style: 'immédiate',
-    aide_niveau: 'modéré'
-  };
-
-  const activeConfig = { ...defaultConfig, ...config };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'fr-FR';
-
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        setInputText(text);
-        setIsListening(false);
-      };
-
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
-
-      setRecognition(recognition);
+class ChatbotPreview {
+    constructor(config) {
+        this.config = config;
+        this.messages = [];
+        this.containerEl = document.getElementById('chatbotPreview');
+        this.initialize();
     }
-  }, []);
 
-  const toggleListening = () => {
-    if (isListening) {
-      recognition?.stop();
-    } else {
-      recognition?.start();
-    }
-    setIsListening(!isListening);
-  };
-
-  const handleSend = () => {
-    if (inputText.trim()) {
-      setMessages(prev => [...prev, { 
-        type: 'user', 
-        content: inputText 
-      }]);
-
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          type: 'bot',
-          content: `Je suis un ${activeConfig.role} ${activeConfig.personnalite}. Je vais t'aider avec ${activeConfig.theme}.`
-        }]);
-      }, 1000);
-
-      setInputText('');
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSend();
-    }
-  };
-
-  return (
-    <div className="preview-container">
-      <div className="preview-header">
-        <h2>Prévisualisation du Chatbot</h2>
-        <p className="preview-config">
-          Configuration actuelle : {activeConfig.theme} (Niveau {activeConfig.niveau})
-        </p>
-      </div>
-
-      <div className="messages-container">
-        {messages.map((message, index) => (
-          <div key={index} className={`message ${message.type}`}>
-            <div className="message-content">
-              {message.content}
+    initialize() {
+        // Création de l'interface de chat
+        this.containerEl.innerHTML = `
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                    <input type="text" id="userInput" placeholder="Écrivez votre message...">
+                    <button id="sendButton" class="send-button">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button id="voiceButton" class="voice-button">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-          </div>
-        ))}
-      </div>
+        `;
 
-      <div className="input-container">
-        <button
-          onClick={toggleListening}
-          className={`voice-button ${isListening ? 'listening' : ''}`}
-          title={isListening ? "Arrêter l'enregistrement" : "Commencer l'enregistrement"}
-        >
-          {isListening ? <MicOff className="icon" /> : <Mic className="icon" />}
-        </button>
-        <input
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Écrivez votre message..."
-          className="message-input"
-        />
-        <button
-          onClick={handleSend}
-          className="send-button"
-          title="Envoyer le message"
-        >
-          <Send className="icon" />
-        </button>
-      </div>
-    </div>
-  );
-};
+        // Ajout des écouteurs d'événements
+        this.setupEventListeners();
+        
+        // Message de bienvenue
+        this.addBotMessage(this.getWelcomeMessage());
+    }
 
-export default ChatbotPreview;
+    setupEventListeners() {
+        const sendButton = document.getElementById('sendButton');
+        const userInput = document.getElementById('userInput');
+        const voiceButton = document.getElementById('voiceButton');
+
+        sendButton.addEventListener('click', () => this.handleUserInput());
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.handleUserInput();
+            }
+        });
+
+        voiceButton.addEventListener('click', () => this.toggleVoiceRecognition());
+    }
+
+    handleUserInput() {
+        const userInput = document.getElementById('userInput');
+        const message = userInput.value.trim();
+        
+        if (message) {
+            this.addUserMessage(message);
+            userInput.value = '';
+            this.generateBotResponse(message);
+        }
+    }
+
+    addUserMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message user-message';
+        messageDiv.textContent = message;
+        document.getElementById('chatMessages').appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    addBotMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message bot-message';
+        messageDiv.textContent = message;
+        document.getElementById('chatMessages').appendChild(messageDiv);
+        this.scrollToBottom();
+    }
+
+    getWelcomeMessage() {
+        return `Bonjour ! Je suis votre ${this.config.role} ${this.config.personnalite}. 
+                Je suis là pour vous aider avec ${this.config.theme}. 
+                Comment puis-je vous aider ?`;
+    }
+
+    generateBotResponse(userMessage) {
+        // Simulation d'une réponse différée
+        setTimeout(() => {
+            let response;
+            
+            // Réponse basée sur le niveau et le style de correction
+            if (this.config.correction_style === 'immediate') {
+                response = this.generateImmediateResponse(userMessage);
+            } else if (this.config.correction_style === 'delayed') {
+                response = this.generateDelayedResponse(userMessage);
+            } else {
+                response = this.generateSelectiveResponse(userMessage);
+            }
+
+            this.addBotMessage(response);
+        }, 1000);
+    }
+
+    generateImmediateResponse(userMessage) {
+        // Exemple de réponse immédiate basée sur le niveau
+        switch(this.config.niveau) {
+            case 'A1':
+                return "Je comprends. Permettez-moi de vous aider avec une structure simple.";
+            case 'A2':
+                return "Bien ! Essayons d'enrichir votre vocabulaire.";
+            case 'B1':
+                return "Excellent ! Travaillons sur la fluidité de l'expression.";
+            case 'B2':
+                return "Parfait ! Approfondissons les nuances de la langue.";
+            default:
+                return "Je vous écoute. Comment puis-je vous aider ?";
+        }
+    }
+
+    generateDelayedResponse(userMessage) {
+        return "Je note vos erreurs et nous les reverrons à la fin de la conversation.";
+    }
+
+    generateSelectiveResponse(userMessage) {
+        return "Continuons la conversation. Je vous aide quand c'est nécessaire.";
+    }
+
+    scrollToBottom() {
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    toggleVoiceRecognition() {
+        // Implémentation de la reconnaissance vocale
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const message = event.results[0][0].transcript;
+                document.getElementById('userInput').value = message;
+            };
+        } else {
+            alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
+        }
+    }
+}
+
+// Export de la classe
+window.ChatbotPreview = ChatbotPreview;
