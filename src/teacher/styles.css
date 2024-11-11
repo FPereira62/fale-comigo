@@ -1,152 +1,21 @@
-// Ajoutez ces styles dans la section <style> existante :
-.preview {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: #1a1a1a;
-    color: #fff;
-    border-radius: 8px;
-    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-}
-
-.preview code {
-    white-space: pre-wrap;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.controls {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-    position: sticky;
-    bottom: 0;
-    background: white;
-    padding: 1rem;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-
-/* Styles pour la prévisualisation du chatbot */
-.preview-container {
-    width: 100%;
-    max-width: 600px;
-    margin: 2rem auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .preview-header {
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .preview-header h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-  }
-  
-  .preview-config {
-    margin: 0.5rem 0 0;
-    font-size: 0.9rem;
-    color: #666;
-  }
-  
-  .messages-container {
-    height: 400px;
-    padding: 1rem;
-    overflow-y: auto;
-  }
-  
-  .message {
-    margin-bottom: 1rem;
-  }
-  
-  .message.user {
-    text-align: right;
-  }
-  
-  .message-content {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 1rem;
-    max-width: 80%;
-  }
-  
-  .message.user .message-content {
-    background: #007bff;
-    color: white;
-  }
-  
-  .message.bot .message-content {
-    background: #f1f1f1;
-  }
-  
-  .input-container {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border-top: 1px solid #eee;
-  }
-  
-  .voice-button, .send-button {
-    padding: 0.5rem;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .voice-button {
-    background: #f1f1f1;
-  }
-  
-  .voice-button.listening {
-    background: #dc3545;
-    color: white;
-  }
-  
-  .send-button {
-    background: #007bff;
-    color: white;
-  }
-  
-  .message-input {
-    flex: 1;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-  
-  .icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Styles existants */
+/* Reset et variables */
 :root {
   --primary-color: #007bff;
   --secondary-color: #6c757d;
   --success-color: #28a745;
-  --background-color: #f8f9fa;
   --border-color: #dee2e6;
+  --background-color: #f8f9fa;
   --text-color: #333;
-  --modal-backdrop: rgba(0, 0, 0, 0.5);
 }
 
+/* Styles de base */
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
   color: var(--text-color);
+  background: var(--background-color);
   margin: 0;
   padding: 20px;
-  background: var(--background-color);
 }
 
 .container {
@@ -155,14 +24,242 @@ body {
   background: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Ajout des nouveaux styles pour la prévisualisation */
-.preview-section {
-  margin: 2rem -2rem;
+/* Styles des sections */
+.section {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section h2 {
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+/* Styles des formulaires */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Styles des chips */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-height: 45px;
+}
+
+.chip {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.chip button {
+  background: none;
+  border: none;
+  color: white;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+.add-item {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.add-item input {
+  flex: 1;
+}
+
+.add-item button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* Styles des boutons */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+button.primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+button.primary:hover {
+  background: #0056b3;
+}
+
+button.secondary {
+  background: var(--secondary-color);
+  color: white;
+}
+
+button.secondary:hover {
+  background: #545b62;
+}
+
+/* Styles des modales */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.modal.visible {
+  opacity: 1;
+}
+
+.modal-content {
+  background: white;
   padding: 2rem;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.modal-section {
+  margin-bottom: 1.5rem;
+}
+
+.modal-section h3 {
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.badge {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  display: inline-block;
+  margin: 0.25rem;
+}
+
+.close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  color: var(--secondary-color);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Styles des messages de succès */
+.success {
+  color: var(--success-color);
+  padding: 1rem;
+  border: 1px solid var(--success-color);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.future-feature-notice {
+  color: var(--secondary-color);
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+/* Styles de la prévisualisation */
+.preview-section {
   background: var(--background-color);
+  padding: 2rem;
+  margin: 2rem -2rem;
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
 }
@@ -172,144 +269,31 @@ body {
   margin: 0 auto;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
-.preview-header {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--primary-color);
-  color: white;
-}
-
-.preview-header h2 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.preview-config {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.messages-container {
-  height: 400px;
-  padding: 1rem;
-  overflow-y: auto;
-  background: #f8f9fa;
-}
-
-.message {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.message.user {
-  align-items: flex-end;
-}
-
-.message.bot {
-  align-items: flex-start;
-}
-
-.message-content {
-  max-width: 80%;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  word-break: break-word;
-}
-
-.message.user .message-content {
-  background: var(--primary-color);
-  color: white;
-  border-bottom-right-radius: 0.25rem;
-}
-
-.message.bot .message-content {
-  background: white;
-  border: 1px solid var(--border-color);
-  border-bottom-left-radius: 0.25rem;
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: white;
-  border-top: 1px solid var(--border-color);
-}
-
-.message-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 1.5rem;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.message-input:focus {
-  border-color: var(--primary-color);
-}
-
-.voice-button,
-.send-button {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.voice-button {
-  background: #f1f1f1;
-}
-
-.voice-button:hover {
-  background: #e1e1e1;
-}
-
-.voice-button.listening {
-  background: #dc3545;
-  color: white;
-}
-
-.send-button {
-  background: var(--primary-color);
-  color: white;
-}
-
-.send-button:hover {
-  background: #0056b3;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-}
-
-/* Animation pour les messages */
-@keyframes slideIn {
-  from {
-      opacity: 0;
-      transform: translateY(10px);
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
   }
-  to {
-      opacity: 1;
-      transform: translateY(0);
+  
+  .container {
+    padding: 1rem;
   }
-}
-
-.message {
-  animation: slideIn 0.3s ease-out;
+  
+  .preview-section {
+    margin: 1rem -1rem;
+    padding: 1rem;
+  }
+  
+  .controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  button {
+    width: 100%;
+  }
 }
