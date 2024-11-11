@@ -1,15 +1,17 @@
-// 1. Imports (au début du fichier)
+// Import du composant ChatbotPreview
 import ChatbotPreview from './components/ChatbotPreview.js';
 
-// 2. Configuration de la reconnaissance vocale
-let recognition = null;
-if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.lang = 'fr-FR';
-}
+// Rendre les fonctions disponibles globalement
+window.addChip = addChip;
+window.removeChip = removeChip;
+window.updateAddButton = updateAddButton;
+window.getChipsValues = getChipsValues;
+window.showModal = showModal;
+window.closeModal = closeModal;
+window.verifierConfig = verifierConfig;
+window.resetForm = resetForm;
 
-// 3. État global du formulaire (nouveau)
+// État global du formulaire
 let formState = {
     theme: '',
     niveau: '',
@@ -23,7 +25,7 @@ let formState = {
     aide_niveau: 'minimal'
 };
 
-// 4. Fonctions de gestion des chips (votre code existant)
+// Fonctions de gestion des chips
 function addChip(containerId, inputId) {
     const container = document.getElementById(containerId);
     const input = document.getElementById(inputId);
@@ -39,7 +41,7 @@ function addChip(containerId, inputId) {
         container.appendChild(chip);
         input.value = '';
         updateAddButton(containerId);
-        updateFormState(); // Ajout de cette ligne
+        updateFormState();
     }
 }
 
@@ -48,7 +50,7 @@ function removeChip(button) {
     const container = chip.parentElement;
     chip.remove();
     updateAddButton(container.id);
-    updateFormState(); // Ajout de cette ligne
+    updateFormState();
 }
 
 function updateAddButton(containerId) {
@@ -68,22 +70,7 @@ function getChipsValues(containerId) {
         .filter(text => text.length > 0);
 }
 
-// 5. Fonctions de gestion Firestore (votre code existant)
-async function saveToFirestore(config) {
-    try {
-        const docRef = await db.collection('activites').add({
-            ...config,
-            dateCreation: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("Document sauvegardé avec ID: ", docRef.id);
-        return true;
-    } catch (error) {
-        console.error("Erreur lors de la sauvegarde: ", error);
-        return false;
-    }
-}
-
-// 6. Fonctions de gestion des modales (votre code existant)
+// Fonctions de gestion des modales
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
     modal.style.display = 'flex';
@@ -99,37 +86,11 @@ function closeModal(modalId) {
     }, 300);
 }
 
-// 7. Nouvelles fonctions pour la prévisualisation
-function updateFormState() {
-    formState = {
-        theme: document.getElementById('theme').value,
-        niveau: document.getElementById('niveau').value,
-        contexte: document.getElementById('contexte').value,
-        role: document.getElementById('role').value,
-        personnalite: document.getElementById('personnalite').value,
-        objectifs: getChipsValues('objectifs'),
-        structures: getChipsValues('structures'),
-        vocabulaire: getChipsValues('vocabulaire'),
-        correction_style: document.getElementById('correction_style').value,
-        aide_niveau: document.getElementById('aide_niveau').value
-    };
-    
-    updatePreview();
-}
-
-function updatePreview() {
-    const previewContainer = document.getElementById('chatbotPreview');
-    if (previewContainer) {
-        ReactDOM.render(
-            React.createElement(ChatbotPreview, { config: formState }),
-            previewContainer
-        );
-    }
-}
-
-// 8. Fonction de vérification (votre code existant modifié)
+// Fonction de vérification
 function verifierConfig() {
-    // Utiliser formState au lieu de créer un nouvel objet
+    // Mettre à jour formState avec les valeurs actuelles
+    updateFormState();
+
     document.getElementById('review-info').innerHTML = `
         <p><strong>Thème:</strong> ${formState.theme}</p>
         <p><strong>Niveau:</strong> ${formState.niveau}</p>
@@ -155,7 +116,34 @@ function verifierConfig() {
     showModal('verificationModal');
 }
 
-// 9. Event listeners (à la fin du fichier)
+// Fonction pour mettre à jour l'état du formulaire
+function updateFormState() {
+    formState = {
+        theme: document.getElementById('theme').value,
+        niveau: document.getElementById('niveau').value,
+        contexte: document.getElementById('contexte').value,
+        role: document.getElementById('role').value,
+        personnalite: document.getElementById('personnalite').value,
+        objectifs: getChipsValues('objectifs'),
+        structures: getChipsValues('structures'),
+        vocabulaire: getChipsValues('vocabulaire'),
+        correction_style: document.getElementById('correction_style').value,
+        aide_niveau: document.getElementById('aide_niveau').value
+    };
+}
+
+// Fonction de réinitialisation du formulaire
+function resetForm() {
+    document.getElementById('configForm').reset();
+    ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+        updateAddButton(id);
+    });
+    closeModal('successModal');
+    updateFormState();
+}
+
+// Event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Initialisation des chips containers
     ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
@@ -194,20 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 addChip(this.id.replace('new', '').toLowerCase(), this.id);
-                updateFormState();
             }
         });
     });
 });
-
-// 10. Exports
-export {
-    addChip,
-    removeChip,
-    updateAddButton,
-    getChipsValues,
-    showModal,
-    closeModal,
-    verifierConfig,
-    resetForm
-};
