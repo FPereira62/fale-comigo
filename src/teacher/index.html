@@ -9,10 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- React Scripts -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-
     <!-- Configuration Firebase -->
     <script src="firebase-config.js"></script>
 
@@ -22,17 +18,14 @@
 <body>
     <div class="container">
         <h1>Configuration de l'activité</h1>
+        
         <form id="configForm">
             <!-- Section Informations générales -->
             <div class="section">
                 <h2>Informations générales</h2>
                 <div class="form-group">
                     <label for="theme">Thème de l'activité</label>
-                    <input type="text" 
-                           id="theme" 
-                           name="theme" 
-                           placeholder="Ex: Voyages, Restaurant..." 
-                           required>
+                    <input type="text" id="theme" name="theme" placeholder="Ex: Voyages, Restaurant..." required>
                 </div>
                 <div class="form-group">
                     <label for="niveau">Niveau</label>
@@ -46,10 +39,7 @@
                 </div>
                 <div class="form-group">
                     <label for="contexte">Contexte</label>
-                    <textarea id="contexte" 
-                              name="contexte" 
-                              placeholder="Décrivez le contexte de la conversation..." 
-                              required></textarea>
+                    <textarea id="contexte" name="contexte" placeholder="Décrivez le contexte..." required></textarea>
                 </div>
             </div>
 
@@ -58,27 +48,17 @@
                 <h2>Configuration du Chatbot</h2>
                 <div class="form-group">
                     <label for="role">Rôle</label>
-                    <input type="text" 
-                           id="role" 
-                           name="role" 
-                           placeholder="Ex: ami, serveur, professeur..." 
-                           required>
+                    <input type="text" id="role" name="role" placeholder="Ex: ami, serveur, professeur..." required>
                 </div>
                 <div class="form-group">
                     <label for="personnalite">Personnalité</label>
-                    <input type="text" 
-                           id="personnalite" 
-                           name="personnalite" 
-                           placeholder="Ex: patient, curieux, encourageant..." 
-                           required>
+                    <input type="text" id="personnalite" name="personnalite" placeholder="Ex: patient, curieux..." required>
                 </div>
                 <div class="form-group">
                     <label>Objectifs pédagogiques</label>
                     <div id="objectifs" class="chips-container" role="list"></div>
                     <div class="add-item">
-                        <input type="text" 
-                               id="newObjectif" 
-                               placeholder="Ex: Intégrer les verbes au présent...">
+                        <input type="text" id="newObjectif" placeholder="Ex: Intégrer les verbes...">
                         <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
                     </div>
                 </div>
@@ -91,9 +71,7 @@
                     <label>Structures grammaticales</label>
                     <div id="structures" class="chips-container" role="list"></div>
                     <div class="add-item">
-                        <input type="text" 
-                               id="newStructure" 
-                               placeholder="Ex: Verbes au présent...">
+                        <input type="text" id="newStructure" placeholder="Ex: Verbes au présent...">
                         <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
                     </div>
                 </div>
@@ -101,9 +79,7 @@
                     <label>Vocabulaire cible</label>
                     <div id="vocabulaire" class="chips-container" role="list"></div>
                     <div class="add-item">
-                        <input type="text" 
-                               id="newVocab" 
-                               placeholder="Ex: Noms des pays...">
+                        <input type="text" id="newVocab" placeholder="Ex: Noms des pays...">
                         <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
                     </div>
                 </div>
@@ -131,10 +107,10 @@
             </div>
 
             <!-- Section Prévisualisation -->
-            <section class="preview-section">
+            <div class="section preview-section">
                 <h2>Prévisualisation</h2>
                 <div id="chatbotPreview" class="preview-container"></div>
-            </section>
+            </div>
 
             <!-- Contrôles -->
             <div class="controls">
@@ -194,6 +170,6 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
