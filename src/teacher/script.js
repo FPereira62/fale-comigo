@@ -181,37 +181,50 @@ function initializeChatPreview(config) {
 
     // Ajout du message de bienvenue
     addBotMessage(`Bonjour ! Je suis votre ${config.role} ${config.personnalite}. 
-                   Je suis là pour vous aider avec ${config.theme}. 
+                   Je suis là pour vous aider avec le thème: ${config.theme}. 
                    Comment puis-je vous aider ?`);
 
-    // Gestionnaires d'événements
-    setupChatEventListeners(config);
-}
-
+   // Mise à jour de la fonction setupChatEventListeners
 function setupChatEventListeners(config) {
     const sendButton = document.getElementById('sendMessage');
     const userInput = document.getElementById('userInput');
     const voiceButton = document.getElementById('voiceInput');
 
     if (sendButton && userInput) {
-        sendButton.addEventListener('click', () => handleUserMessage(config));
+        sendButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleUserMessage(config);
+        });
+
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
                 handleUserMessage(config);
             }
         });
     }
 
     if (voiceButton) {
-        voiceButton.addEventListener('click', startVoiceRecognition);
+        voiceButton.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startVoiceRecognition();
+        };
     }
 }
 
+// Mise à jour de la fonction handleUserMessage
 function handleUserMessage(config) {
     const userInput = document.getElementById('userInput');
     const message = userInput.value.trim();
     
     if (message) {
+        // Empêche la propagation de l'événement pour éviter la soumission du formulaire
+        event.preventDefault();
+        event.stopPropagation();
+        
         addUserMessage(message);
         userInput.value = '';
         generateBotResponse(message, config);
@@ -264,61 +277,45 @@ function scrollToBottom() {
     }
 }
 
-function startVoiceRecognition(event) {
-    // Empêcher tout comportement par défaut
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
+// Mise à jour de la fonction startVoiceRecognition
+function startVoiceRecognition() {
     if ('webkitSpeechRecognition' in window) {
         const recognition = new webkitSpeechRecognition();
-        const voiceButton = document.getElementById('voiceInput');
-        
         recognition.lang = 'fr-FR';
         recognition.continuous = false;
         recognition.interimResults = false;
 
-        recognition.onstart = function() {
-            if (voiceButton) {
-                voiceButton.style.backgroundColor = '#dc3545';
-            }
+        // Indicateur visuel quand la reconnaissance commence
+        recognition.onstart = () => {
+            const voiceButton = document.getElementById('voiceInput');
+            if (voiceButton) voiceButton.style.backgroundColor = '#dc3545';
         };
 
-        recognition.onend = function() {
-            if (voiceButton) {
-                voiceButton.style.backgroundColor = '';
-            }
-        };
+        // Gestion du résultat de la reconnaissance
+        recognition.onresult = (event) => {
+            const voiceButton = document.getElementById('voiceInput');
+            if (voiceButton) voiceButton.style.backgroundColor = '';
 
-        recognition.onerror = function() {
-            if (voiceButton) {
-                voiceButton.style.backgroundColor = '';
-            }
-        };
-
-        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
             const userInput = document.getElementById('userInput');
-            if (userInput && event.results[0] && event.results[0][0]) {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                
-                // Envoyer le message automatiquement
-                const message = transcript.trim();
-                if (message) {
-                    addUserMessage(message);
-                    userInput.value = '';
-                    generateBotResponse(message, window.currentConfig);
-                }
-            }
+            
+            // Afficher le message de l'utilisateur
+            addUserMessage(transcript);
+            
+            // Générer une réponse du bot
+            generateBotResponse(transcript, window.currentConfig);
+            
+            // Nettoyer le champ de saisie
+            if (userInput) userInput.value = '';
         };
 
-        try {
-            recognition.start();
-        } catch (error) {
-            console.error('Erreur de reconnaissance vocale:', error);
-            voiceButton.style.backgroundColor = '';
-        }
+        // Réinitialiser le bouton quand la reconnaissance se termine
+        recognition.onend = () => {
+            const voiceButton = document.getElementById('voiceInput');
+            if (voiceButton) voiceButton.style.backgroundColor = '';
+        };
+
+        recognition.start();
     } else {
         alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
     }
@@ -338,27 +335,37 @@ function addUserMessage(message) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Mise à jour de la fonction generateBotResponse pour des réponses plus contextuelles
+// Mise à jour de la fonction generateBotResponse pour des réponses plus pertinentes
 function generateBotResponse(userMessage, config) {
+    // Empêcher la soumission du formulaire
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     setTimeout(() => {
-        let response;
+        let response = '';
         
-        // Adapter la réponse en fonction du niveau et du contexte
-        switch(config.niveau) {
-            case 'A1':
-                response = `Pour le thème "${config.theme}", au niveau débutant, je vous propose de pratiquer avec des phrases simples.`;
-                break;
-            case 'A2':
-                response = `Dans le contexte de ${config.theme}, nous pouvons travailler sur le vocabulaire de base.`;
-                break;
-            case 'B1':
-                response = `Excellent ! Continuons à pratiquer ${config.theme} avec des expressions plus complexes.`;
-                break;
-            case 'B2':
-                response = `Pour approfondir ${config.theme}, explorons des situations plus nuancées.`;
-                break;
-            default:
-                response = `Je comprends votre message concernant ${config.theme}. Comment puis-je vous aider ?`;
+        // Adapter la réponse en fonction du niveau et du thème
+        if (config && config.niveau) {
+            switch(config.niveau) {
+                case 'A1':
+                    response = `En tant que ${config.role || 'assistant'}, je vais vous aider à pratiquer "${config.theme || 'la conversation'}" avec des phrases simples. ${userMessage.length > 30 ? 'Essayons avec des phrases plus courtes.' : ''}`;
+                    break;
+                case 'A2':
+                    response = `Continuons à pratiquer ${config.theme || 'la conversation'}. ${userMessage.includes('?') ? 'Je vais vous aider à formuler vos questions.' : 'Je peux vous aider à enrichir votre vocabulaire.'}`;
+                    break;
+                case 'B1':
+                    response = `Très bien ! Vous progressez bien dans ${config.theme || 'cette conversation'}. Pouvez-vous développer votre idée ?`;
+                    break;
+                case 'B2':
+                    response = `Excellent niveau d'expression ! Approfondissons ${config.theme || 'ce sujet'} avec des structures plus complexes.`;
+                    break;
+                default:
+                    response = `Je vous écoute. Comment puis-je vous aider avec ${config.theme || 'cette conversation'} ?`;
+            }
+        } else {
+            response = "Je vous écoute. Comment puis-je vous aider ?";
         }
 
         addBotMessage(response);
