@@ -1,6 +1,19 @@
+// État global
+let currentConfig = {
+    theme: '',
+    niveau: '',
+    contexte: '',
+    role: '',
+    personnalite: '',
+    objectifs: [],
+    structures: [],
+    vocabulaire: [],
+    correction_style: 'immediate',
+    aide_niveau: 'minimal'
+};
+
 // Fonctions de gestion des chips (tags)
 function addChip(containerId, inputId) {
-    console.log('Adding chip to', containerId, 'from', inputId); // Pour le débogage
     const container = document.getElementById(containerId);
     const input = document.getElementById(inputId);
     const value = input.value.trim();
@@ -15,6 +28,7 @@ function addChip(containerId, inputId) {
         container.appendChild(chip);
         input.value = '';
         updateAddButton(containerId);
+        updateFormState(); // Met à jour la prévisualisation
     }
 }
 
@@ -23,6 +37,7 @@ function removeChip(button) {
     const container = chip.parentElement;
     chip.remove();
     updateAddButton(container.id);
+    updateFormState(); // Met à jour la prévisualisation
 }
 
 function updateAddButton(containerId) {
@@ -46,7 +61,6 @@ function getChipsValues(containerId) {
 
 // Fonctions de gestion des modales
 function showModal(modalId) {
-    console.log('Showing modal', modalId); // Pour le débogage
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'flex';
@@ -67,41 +81,28 @@ function closeModal(modalId) {
 
 // Fonction de vérification de la configuration
 function verifierConfig() {
-    console.log('Vérification de la configuration'); // Pour le débogage
-    const formData = {
-        theme: document.getElementById('theme').value,
-        niveau: document.getElementById('niveau').value,
-        contexte: document.getElementById('contexte').value,
-        role: document.getElementById('role').value,
-        personnalite: document.getElementById('personnalite').value,
-        objectifs: getChipsValues('objectifs'),
-        structures: getChipsValues('structures'),
-        vocabulaire: getChipsValues('vocabulaire'),
-        correction_style: document.getElementById('correction_style').value,
-        aide_niveau: document.getElementById('aide_niveau').value
-    };
+    updateFormState();
 
-    // Mise à jour de la modal de vérification
     document.getElementById('review-info').innerHTML = `
-        <p><strong>Thème:</strong> ${formData.theme}</p>
-        <p><strong>Niveau:</strong> ${formData.niveau}</p>
-        <p><strong>Contexte:</strong> ${formData.contexte}</p>
+        <p><strong>Thème:</strong> ${currentConfig.theme}</p>
+        <p><strong>Niveau:</strong> ${currentConfig.niveau}</p>
+        <p><strong>Contexte:</strong> ${currentConfig.contexte}</p>
     `;
 
     document.getElementById('review-chatbot').innerHTML = `
-        <p><strong>Rôle:</strong> ${formData.role}</p>
-        <p><strong>Personnalité:</strong> ${formData.personnalite}</p>
+        <p><strong>Rôle:</strong> ${currentConfig.role}</p>
+        <p><strong>Personnalité:</strong> ${currentConfig.personnalite}</p>
         <p><strong>Objectifs:</strong></p>
-        <div>${formData.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}</div>
+        <div>${currentConfig.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}</div>
     `;
 
     document.getElementById('review-params').innerHTML = `
         <p><strong>Structures grammaticales:</strong></p>
-        <div>${formData.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}</div>
+        <div>${currentConfig.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}</div>
         <p><strong>Vocabulaire:</strong></p>
-        <div>${formData.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}</div>
-        <p><strong>Style de correction:</strong> ${formData.correction_style}</p>
-        <p><strong>Niveau d'aide:</strong> ${formData.aide_niveau}</p>
+        <div>${currentConfig.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}</div>
+        <p><strong>Style de correction:</strong> ${currentConfig.correction_style}</p>
+        <p><strong>Niveau d'aide:</strong> ${currentConfig.aide_niveau}</p>
     `;
 
     showModal('verificationModal');
@@ -132,14 +133,12 @@ function resetForm() {
             updateAddButton(id);
         }
     });
+    updateFormState();
     closeModal('successModal');
 }
-
-// Initialisation
-
-// Gestion de la prévisualisation du chat
+// Fonctions de gestion du chat
 function updateFormState() {
-    window.currentConfig = {
+    currentConfig = {
         theme: document.getElementById('theme').value,
         niveau: document.getElementById('niveau').value,
         contexte: document.getElementById('contexte').value,
@@ -152,310 +151,27 @@ function updateFormState() {
         aide_niveau: document.getElementById('aide_niveau').value
     };
 
-    initializeChatPreview(window.currentConfig);
-}
-
-function initializeChatPreview(config) {
-    const previewContainer = document.getElementById('chatbotPreview');
-    if (!previewContainer) return;
-
-    previewContainer.innerHTML = `
-        <div class="chat-container">
-            <div class="chat-messages" id="chatMessages"></div>
-            <div class="chat-input">
-                <input type="text" id="userInput" placeholder="Écrivez votre message...">
-                <button class="send-button" id="sendMessage">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <button class="voice-button" id="voiceInput">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    `;
-
-    // Ajout du message de bienvenue
-    addBotMessage(`Bonjour ! Je suis votre ${config.role} ${config.personnalite}. 
-                   Je suis là pour vous aider avec le thème: ${config.theme}. 
-                   Comment puis-je vous aider ?`);
-
-   // Mise à jour de la fonction setupChatEventListeners
-function setupChatEventListeners(config) {
-    const sendButton = document.getElementById('sendMessage');
-    const userInput = document.getElementById('userInput');
-    const voiceButton = document.getElementById('voiceInput');
-
-    if (sendButton && userInput) {
-        sendButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleUserMessage(config);
-        });
-
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                e.stopPropagation();
-                handleUserMessage(config);
-            }
-        });
-    }
-
-    if (voiceButton) {
-        voiceButton.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            startVoiceRecognition();
-        };
+    // Initialise ou met à jour le chat si nécessaire
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages && chatMessages.children.length === 0) {
+        addBotMessage(`Bonjour ! Je suis votre ${currentConfig.role || 'assistant'} ${currentConfig.personnalite || 'amical'}. 
+                      Je suis là pour vous aider avec ${currentConfig.theme || 'la conversation'}. 
+                      Comment puis-je vous aider ?`);
     }
 }
 
-// Mise à jour de la fonction handleUserMessage
-function handleUserMessage(config) {
-    const userInput = document.getElementById('userInput');
-    const message = userInput.value.trim();
-    
-    if (message) {
-        // Empêche la propagation de l'événement pour éviter la soumission du formulaire
-        event.preventDefault();
-        event.stopPropagation();
-        
-        addUserMessage(message);
-        userInput.value = '';
-        generateBotResponse(message, config);
-    }
-}
-
-function addUserMessage(message) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message user-message';
-    messageDiv.textContent = message;
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-}
-
-function addBotMessage(message) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message bot-message';
-    messageDiv.textContent = message;
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-}
-
-function generateBotResponse(userMessage, config) {
-    setTimeout(() => {
-        let response;
-        switch(config.correction_style) {
-            case 'immediate':
-                response = `Je comprends votre message. Dans le contexte de ${config.theme}, au niveau ${config.niveau}, je suggère...`;
-                break;
-            case 'delayed':
-                response = "Je note votre message. Nous reverrons les points importants plus tard.";
-                break;
-            default:
-                response = "Je vous écoute. Continuons notre conversation.";
-        }
-        addBotMessage(response);
-    }, 1000);
-}
-
-function scrollToBottom() {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-}
-
-// Mise à jour de la fonction startVoiceRecognition
-function startVoiceRecognition() {
-    if ('webkitSpeechRecognition' in window) {
-        const recognition = new webkitSpeechRecognition();
-        recognition.lang = 'fr-FR';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-
-        // Indicateur visuel quand la reconnaissance commence
-        recognition.onstart = () => {
-            const voiceButton = document.getElementById('voiceInput');
-            if (voiceButton) voiceButton.style.backgroundColor = '#dc3545';
-        };
-
-        // Gestion du résultat de la reconnaissance
-        recognition.onresult = (event) => {
-            const voiceButton = document.getElementById('voiceInput');
-            if (voiceButton) voiceButton.style.backgroundColor = '';
-
-            const transcript = event.results[0][0].transcript;
-            const userInput = document.getElementById('userInput');
-            
-            // Afficher le message de l'utilisateur
-            addUserMessage(transcript);
-            
-            // Générer une réponse du bot
-            generateBotResponse(transcript, window.currentConfig);
-            
-            // Nettoyer le champ de saisie
-            if (userInput) userInput.value = '';
-        };
-
-        // Réinitialiser le bouton quand la reconnaissance se termine
-        recognition.onend = () => {
-            const voiceButton = document.getElementById('voiceInput');
-            if (voiceButton) voiceButton.style.backgroundColor = '';
-        };
-
-        recognition.start();
-    } else {
-        alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
-    }
-}
-
-// Mise à jour de la fonction addUserMessage pour assurer qu'elle ne déclenche pas le formulaire
-function addUserMessage(message) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (!messagesContainer) return;
-
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message user-message';
-    messageDiv.textContent = message;
-    messagesContainer.appendChild(messageDiv);
-    
-    // Faire défiler jusqu'au dernier message
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// Mise à jour de la fonction generateBotResponse pour des réponses plus pertinentes
-function generateBotResponse(userMessage, config) {
-    // Empêcher la soumission du formulaire
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
-    setTimeout(() => {
-        let response = '';
-        
-        // Adapter la réponse en fonction du niveau et du thème
-        if (config && config.niveau) {
-            switch(config.niveau) {
-                case 'A1':
-                    response = `En tant que ${config.role || 'assistant'}, je vais vous aider à pratiquer "${config.theme || 'la conversation'}" avec des phrases simples. ${userMessage.length > 30 ? 'Essayons avec des phrases plus courtes.' : ''}`;
-                    break;
-                case 'A2':
-                    response = `Continuons à pratiquer ${config.theme || 'la conversation'}. ${userMessage.includes('?') ? 'Je vais vous aider à formuler vos questions.' : 'Je peux vous aider à enrichir votre vocabulaire.'}`;
-                    break;
-                case 'B1':
-                    response = `Très bien ! Vous progressez bien dans ${config.theme || 'cette conversation'}. Pouvez-vous développer votre idée ?`;
-                    break;
-                case 'B2':
-                    response = `Excellent niveau d'expression ! Approfondissons ${config.theme || 'ce sujet'} avec des structures plus complexes.`;
-                    break;
-                default:
-                    response = `Je vous écoute. Comment puis-je vous aider avec ${config.theme || 'cette conversation'} ?`;
-            }
-        } else {
-            response = "Je vous écoute. Comment puis-je vous aider ?";
-        }
-
-        addBotMessage(response);
-    }, 1000);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded'); // Pour le débogage
-
-    // Initialisation des containers de chips
-    ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
-        const container = document.getElementById(id);
-        if (container) {
-            updateAddButton(id);
-            container.setAttribute('role', 'list');
-        }
-    });
-
-    // Initialisation de la prévisualisation
-updateFormState();
-
-// Ajout des écouteurs pour la mise à jour de la prévisualisation
-const formInputs = document.querySelectorAll('input, select, textarea');
-formInputs.forEach(input => {
-    input.addEventListener('change', updateFormState);
-    input.addEventListener('input', updateFormState);
-});
-
-    // Gestionnaire du formulaire
-    const form = document.getElementById('configForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = {
-                theme: document.getElementById('theme').value,
-                niveau: document.getElementById('niveau').value,
-                contexte: document.getElementById('contexte').value,
-                role: document.getElementById('role').value,
-                personnalite: document.getElementById('personnalite').value,
-                objectifs: getChipsValues('objectifs'),
-                structures: getChipsValues('structures'),
-                vocabulaire: getChipsValues('vocabulaire'),
-                correction_style: document.getElementById('correction_style').value,
-                aide_niveau: document.getElementById('aide_niveau').value
-            };
-
-            closeModal('verificationModal');
-            const saveSuccess = await saveToFirestore(formData);
-            
-            if (saveSuccess) {
-                showModal('successModal');
-            } else {
-                alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.');
-            }
-        });
-    }
-
-    // Gestion de l'ajout de chips avec la touche Entrée
-    ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
-        const input = document.getElementById(inputId);
-        if (input) {
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addChip(this.id.replace('new', '').toLowerCase(), this.id);
-                }
-            });
-        }
-    });
-});
-
-// Fonction pour gérer l'envoi de message
 function handleChatMessage(event) {
     event.preventDefault();
     const userInput = document.getElementById('userInput');
     const message = userInput.value.trim();
     
     if (message) {
-        // Ajouter le message de l'utilisateur
         addUserMessage(message);
-        
-        // Effacer l'input
         userInput.value = '';
-        
-        // Générer la réponse du bot
         generateBotResponse(message);
     }
 }
 
-// Fonction pour gérer l'entrée vocale
 function handleVoiceInput(event) {
     event.preventDefault();
     const voiceButton = event.currentTarget;
@@ -466,20 +182,17 @@ function handleVoiceInput(event) {
         recognition.continuous = false;
         recognition.interimResults = false;
 
-        // Changement visuel du bouton pendant l'enregistrement
         recognition.onstart = () => {
-            voiceButton.classList.add('recording');
+            voiceButton.style.backgroundColor = '#dc3545';
         };
 
         recognition.onend = () => {
-            voiceButton.classList.remove('recording');
+            voiceButton.style.backgroundColor = '';
         };
 
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            // Ajouter le message de l'utilisateur
             addUserMessage(transcript);
-            // Générer la réponse du bot
             generateBotResponse(transcript);
         };
 
@@ -489,38 +202,6 @@ function handleVoiceInput(event) {
     }
 }
 
-// Fonction améliorée pour générer la réponse du bot
-function generateBotResponse(message) {
-    const config = {
-        theme: document.getElementById('theme').value,
-        niveau: document.getElementById('niveau').value,
-        role: document.getElementById('role').value,
-        personnalite: document.getElementById('personnalite').value
-    };
-
-    setTimeout(() => {
-        let response;
-        switch(config.niveau) {
-            case 'A1':
-                response = `En tant que ${config.role}, je vais vous aider à pratiquer ${config.theme} simplement.`;
-                break;
-            case 'A2':
-                response = `Continuons à pratiquer ${config.theme} ensemble. Je peux vous aider avec le vocabulaire.`;
-                break;
-            case 'B1':
-                response = `Excellent ! Approfondissons ${config.theme} avec des expressions plus complexes.`;
-                break;
-            case 'B2':
-                response = `Parfait ! Explorons ${config.theme} en détail avec des nuances plus sophistiquées.`;
-                break;
-            default:
-                response = `Je suis là pour vous aider avec ${config.theme}. Comment puis-je vous guider ?`;
-        }
-        addBotMessage(response);
-    }, 1000);
-}
-
-// Fonctions pour ajouter les messages
 function addUserMessage(message) {
     const messagesContainer = document.getElementById('chatMessages');
     if (messagesContainer) {
@@ -543,9 +224,96 @@ function addBotMessage(message) {
     }
 }
 
+function generateBotResponse(userMessage) {
+    setTimeout(() => {
+        let response = '';
+        
+        switch(currentConfig.niveau) {
+            case 'A1':
+                response = `En tant que ${currentConfig.role}, je vais vous aider avec des phrases simples sur ${currentConfig.theme}.`;
+                break;
+            case 'A2':
+                response = `Pratiquons ${currentConfig.theme} ensemble. Je peux vous aider à enrichir votre vocabulaire.`;
+                break;
+            case 'B1':
+                response = `Excellent ! Continuons à explorer ${currentConfig.theme} avec plus de détails.`;
+                break;
+            case 'B2':
+                response = `Parfait ! Approfondissons ${currentConfig.theme} avec des expressions plus sophistiquées.`;
+                break;
+            default:
+                response = `Je suis là pour vous aider avec ${currentConfig.theme}. Que souhaitez-vous pratiquer ?`;
+        }
+
+        addBotMessage(response);
+    }, 1000);
+}
+
 function scrollToBottom() {
     const messagesContainer = document.getElementById('chatMessages');
     if (messagesContainer) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 }
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des containers de chips
+    ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            updateAddButton(id);
+            container.setAttribute('role', 'list');
+        }
+    });
+
+    // Gestionnaire du formulaire
+    const form = document.getElementById('configForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            closeModal('verificationModal');
+            const saveSuccess = await saveToFirestore(currentConfig);
+            
+            if (saveSuccess) {
+                showModal('successModal');
+            } else {
+                alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.');
+            }
+        });
+    }
+
+    // Gestion de la touche Entrée pour les chips
+    ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addChip(this.id.replace('new', '').toLowerCase(), this.id);
+                }
+            });
+        }
+    });
+
+    // Gestion de la touche Entrée pour le chat
+    const userInput = document.getElementById('userInput');
+    if (userInput) {
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleChatMessage(e);
+            }
+        });
+    }
+
+    // Initialisation de l'état du formulaire
+    updateFormState();
+
+    // Ajout des écouteurs pour la mise à jour de la prévisualisation
+    const formInputs = document.querySelectorAll('input, select, textarea');
+    formInputs.forEach(input => {
+        input.addEventListener('change', updateFormState);
+        input.addEventListener('input', updateFormState);
+    });
+});
