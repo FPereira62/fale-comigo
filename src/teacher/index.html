@@ -112,67 +112,49 @@
     <div id="chatbotPreview" class="preview-container">
         <div class="chat-container">
             <div class="chat-messages" id="chatMessages">
-                <!-- Les messages seront ajoutés ici dynamiquement -->
+                <!-- Les messages apparaîtront ici -->
             </div>
-            <div class="chat-input-container">
-                <form id="chatForm" onsubmit="event.preventDefault(); return false;">
-                    <div class="chat-input">
-                        <input 
-                            type="text" 
-                            id="userInput" 
-                            placeholder="Écrivez votre message..." 
-                            autocomplete="off"
-                        >
-                        <button 
-                            type="button" 
-                            id="sendMessage" 
-                            class="send-button"
-                            onclick="event.preventDefault(); handleUserMessage(window.currentConfig);"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" 
-                                      stroke-width="2" 
-                                      stroke-linecap="round" 
-                                      stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                        <button 
-                            type="button" 
-                            id="voiceInput" 
-                            class="voice-button"
-                            onclick="event.preventDefault(); startVoiceRecognition();"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
-                                      stroke-width="2" 
-                                      stroke-linecap="round" 
-                                      stroke-linejoin="round"/>
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" 
-                                      stroke-width="2" 
-                                      stroke-linecap="round" 
-                                      stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                </form>
+            <div class="chat-input">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="Écrivez votre message..." 
+                    autocomplete="off"
+                >
+                <button 
+                    type="button" 
+                    class="send-button" 
+                    onclick="handleChatMessage(event)"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" 
+                              stroke-width="2" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button 
+                    type="button" 
+                    class="voice-button" 
+                    onclick="handleVoiceInput(event)"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" 
+                              stroke-width="2" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- À ajouter juste après la section de prévisualisation -->
+<!-- Une seule section de contrôles -->
 <div class="controls">
     <button type="button" onclick="verifierConfig()" class="secondary">Vérifier</button>
     <button type="submit" class="primary">Sauvegarder</button>
 </div>
-
-            <!-- Contrôles -->
-            <div class="controls">
-                <button type="button" onclick="verifierConfig()" class="secondary">Vérifier</button>
-                <button type="submit" class="primary">Sauvegarder</button>
-            </div>
-        </form>
-    </div>
 
     <!-- Modal de vérification -->
     <div id="verificationModal" class="modal" role="dialog">

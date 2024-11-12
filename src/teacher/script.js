@@ -436,3 +436,116 @@ formInputs.forEach(input => {
         }
     });
 });
+
+// Fonction pour gérer l'envoi de message
+function handleChatMessage(event) {
+    event.preventDefault();
+    const userInput = document.getElementById('userInput');
+    const message = userInput.value.trim();
+    
+    if (message) {
+        // Ajouter le message de l'utilisateur
+        addUserMessage(message);
+        
+        // Effacer l'input
+        userInput.value = '';
+        
+        // Générer la réponse du bot
+        generateBotResponse(message);
+    }
+}
+
+// Fonction pour gérer l'entrée vocale
+function handleVoiceInput(event) {
+    event.preventDefault();
+    const voiceButton = event.currentTarget;
+    
+    if ('webkitSpeechRecognition' in window) {
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        // Changement visuel du bouton pendant l'enregistrement
+        recognition.onstart = () => {
+            voiceButton.classList.add('recording');
+        };
+
+        recognition.onend = () => {
+            voiceButton.classList.remove('recording');
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            // Ajouter le message de l'utilisateur
+            addUserMessage(transcript);
+            // Générer la réponse du bot
+            generateBotResponse(transcript);
+        };
+
+        recognition.start();
+    } else {
+        alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
+    }
+}
+
+// Fonction améliorée pour générer la réponse du bot
+function generateBotResponse(message) {
+    const config = {
+        theme: document.getElementById('theme').value,
+        niveau: document.getElementById('niveau').value,
+        role: document.getElementById('role').value,
+        personnalite: document.getElementById('personnalite').value
+    };
+
+    setTimeout(() => {
+        let response;
+        switch(config.niveau) {
+            case 'A1':
+                response = `En tant que ${config.role}, je vais vous aider à pratiquer ${config.theme} simplement.`;
+                break;
+            case 'A2':
+                response = `Continuons à pratiquer ${config.theme} ensemble. Je peux vous aider avec le vocabulaire.`;
+                break;
+            case 'B1':
+                response = `Excellent ! Approfondissons ${config.theme} avec des expressions plus complexes.`;
+                break;
+            case 'B2':
+                response = `Parfait ! Explorons ${config.theme} en détail avec des nuances plus sophistiquées.`;
+                break;
+            default:
+                response = `Je suis là pour vous aider avec ${config.theme}. Comment puis-je vous guider ?`;
+        }
+        addBotMessage(response);
+    }, 1000);
+}
+
+// Fonctions pour ajouter les messages
+function addUserMessage(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message user-message';
+        messageDiv.textContent = message;
+        messagesContainer.appendChild(messageDiv);
+        scrollToBottom();
+    }
+}
+
+function addBotMessage(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message bot-message';
+        messageDiv.textContent = message;
+        messagesContainer.appendChild(messageDiv);
+        scrollToBottom();
+    }
+}
+
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
