@@ -172,18 +172,20 @@ function handleChatMessage(event) {
     }
 }
 
+// Modifier la configuration de la reconnaissance vocale
 function handleVoiceInput(event) {
     event.preventDefault();
     const voiceButton = event.currentTarget;
     
     if ('webkitSpeechRecognition' in window) {
         const recognition = new webkitSpeechRecognition();
-        recognition.lang = 'fr-FR';
+        recognition.lang = 'pt-BR'; // Changé pour le portugais brésilien
         recognition.continuous = false;
         recognition.interimResults = false;
 
         recognition.onstart = () => {
             voiceButton.style.backgroundColor = '#dc3545';
+            addBotMessage("Estou ouvindo... Pode falar!");
         };
 
         recognition.onend = () => {
@@ -196,9 +198,15 @@ function handleVoiceInput(event) {
             generateBotResponse(transcript);
         };
 
+        recognition.onerror = (event) => {
+            if (event.error === 'no-speech') {
+                addBotMessage("Não ouvi nada. Pode repetir, por favor?");
+            }
+        };
+
         recognition.start();
     } else {
-        alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
+        alert('O reconhecimento de voz não é suportado pelo seu navegador.');
     }
 }
 
@@ -224,25 +232,71 @@ function addBotMessage(message) {
     }
 }
 
+// Améliorer la fonction de réponse du bot
 function generateBotResponse(userMessage) {
     setTimeout(() => {
         let response = '';
+        const themeVocabulary = currentConfig.vocabulaire.join(', ');
+        const userMessageLower = userMessage.toLowerCase();
         
+        // Corriger les erreurs courantes
+        let correction = '';
+        if (currentConfig.correction_style === 'immediate') {
+            if (userMessageLower.includes('eu tem')) {
+                correction = "\n💡 Correção: Use 'eu tenho' em vez de 'eu tem'.";
+            } else if (userMessageLower.includes('voce pode')) {
+                correction = "\n💡 Correção: Não esqueça do acento em 'você'.";
+            }
+        }
+
+        // Réponses basées sur le niveau et le contexte
         switch(currentConfig.niveau) {
             case 'A1':
-                response = `En tant que ${currentConfig.role}, je vais vous aider avec des phrases simples sur ${currentConfig.theme}.`;
+                if (userMessageLower.includes('?')) {
+                    response = `Vou responder de forma simples. 
+                              Algumas palavras úteis sobre ${currentConfig.theme}: ${themeVocabulary}`;
+                } else {
+                    response = `Muito bem! Vamos praticar mais? 
+                              Tente usar estas palavras: ${themeVocabulary.split(',')[0]}`;
+                }
                 break;
+
             case 'A2':
-                response = `Pratiquons ${currentConfig.theme} ensemble. Je peux vous aider à enrichir votre vocabulaire.`;
+                if (userMessageLower.includes('como')) {
+                    response = `Para explicar ${currentConfig.theme}, podemos usar: ${themeVocabulary}. 
+                              Quer tentar formar uma frase?`;
+                } else {
+                    response = `Boa! Agora vamos tentar usar algumas expressões mais comuns.`;
+                }
                 break;
+
             case 'B1':
-                response = `Excellent ! Continuons à explorer ${currentConfig.theme} avec plus de détails.`;
+                if (userMessageLower.includes('pode')) {
+                    response = `Claro! Em ${currentConfig.theme}, existem várias maneiras de se expressar.
+                              Que tal usarmos algumas expressões idiomáticas?`;
+                } else {
+                    response = `Você está se expressando bem! Vamos explorar vocabulário mais específico?`;
+                }
                 break;
+
             case 'B2':
-                response = `Parfait ! Approfondissons ${currentConfig.theme} avec des expressions plus sophistiquées.`;
+                response = `Excelente colocação! No contexto de ${currentConfig.theme}, 
+                          podemos aprofundar mais. O que você acha de discutirmos aspectos culturais?`;
                 break;
+
             default:
-                response = `Je suis là pour vous aider avec ${currentConfig.theme}. Que souhaitez-vous pratiquer ?`;
+                response = `Que interessante! Vamos explorar mais esse tema?`;
+        }
+
+        // Ajouter des suggestions basées sur les objectifs pédagogiques
+        if (currentConfig.objectifs.length > 0) {
+            const currentObjective = currentConfig.objectifs[0];
+            response += `\n\n🎯 Objetivo: ${currentObjective}`;
+        }
+
+        // Ajouter la correction si nécessaire
+        if (correction) {
+            response += correction;
         }
 
         addBotMessage(response);
@@ -253,6 +307,29 @@ function scrollToBottom() {
     const messagesContainer = document.getElementById('chatMessages');
     if (messagesContainer) {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// Fonctions utilitaires
+function getGreetingByTime() {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Bom dia!";
+    if (hour < 18) return "Boa tarde!";
+    return "Boa noite!";
+}
+
+function getHintByLevel(level) {
+    switch(level) {
+        case 'A1':
+            return "Vou usar frases simples e claras.";
+        case 'A2':
+            return "Podemos praticar situações do dia a dia.";
+        case 'B1':
+            return "Vamos conversar sobre temas mais complexos.";
+        case 'B2':
+            return "Podemos discutir temas avançados e aspectos culturais.";
+        default:
+            return "Como posso ajudar você hoje?";
     }
 }
 
@@ -309,6 +386,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialisation de l'état du formulaire
     updateFormState();
+    
+    // Message de bienvenue plus contextualisé
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages && chatMessages.children.length === 0) {
+        const welcomeMessage = `Olá! ${getGreetingByTime()} 
+                              Sou ${currentConfig.role || 'seu assistente'} ${currentConfig.personnalite || 'amigável'}. 
+                              Vamos praticar ${currentConfig.theme || 'português'}? 
+                              ${getHintByLevel(currentConfig.niveau)}`;
+        addBotMessage(welcomeMessage);
+    }
+}
+
 
     // Ajout des écouteurs pour la mise à jour de la prévisualisation
     const formInputs = document.querySelectorAll('input, select, textarea');
