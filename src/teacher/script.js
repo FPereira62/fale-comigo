@@ -264,20 +264,105 @@ function scrollToBottom() {
     }
 }
 
-function startVoiceRecognition() {
+function startVoiceRecognition(event) {
+    // Empêcher tout comportement par défaut
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
     if ('webkitSpeechRecognition' in window) {
         const recognition = new webkitSpeechRecognition();
+        const voiceButton = document.getElementById('voiceInput');
+        
         recognition.lang = 'fr-FR';
-        recognition.onresult = (event) => {
-            const userInput = document.getElementById('userInput');
-            if (userInput) {
-                userInput.value = event.results[0][0].transcript;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() {
+            if (voiceButton) {
+                voiceButton.style.backgroundColor = '#dc3545';
             }
         };
-        recognition.start();
+
+        recognition.onend = function() {
+            if (voiceButton) {
+                voiceButton.style.backgroundColor = '';
+            }
+        };
+
+        recognition.onerror = function() {
+            if (voiceButton) {
+                voiceButton.style.backgroundColor = '';
+            }
+        };
+
+        recognition.onresult = function(event) {
+            const userInput = document.getElementById('userInput');
+            if (userInput && event.results[0] && event.results[0][0]) {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                
+                // Envoyer le message automatiquement
+                const message = transcript.trim();
+                if (message) {
+                    addUserMessage(message);
+                    userInput.value = '';
+                    generateBotResponse(message, window.currentConfig);
+                }
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error('Erreur de reconnaissance vocale:', error);
+            voiceButton.style.backgroundColor = '';
+        }
     } else {
         alert('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
     }
+}
+
+// Mise à jour de la fonction addUserMessage pour assurer qu'elle ne déclenche pas le formulaire
+function addUserMessage(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message user-message';
+    messageDiv.textContent = message;
+    messagesContainer.appendChild(messageDiv);
+    
+    // Faire défiler jusqu'au dernier message
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Mise à jour de la fonction generateBotResponse pour des réponses plus contextuelles
+function generateBotResponse(userMessage, config) {
+    setTimeout(() => {
+        let response;
+        
+        // Adapter la réponse en fonction du niveau et du contexte
+        switch(config.niveau) {
+            case 'A1':
+                response = `Pour le thème "${config.theme}", au niveau débutant, je vous propose de pratiquer avec des phrases simples.`;
+                break;
+            case 'A2':
+                response = `Dans le contexte de ${config.theme}, nous pouvons travailler sur le vocabulaire de base.`;
+                break;
+            case 'B1':
+                response = `Excellent ! Continuons à pratiquer ${config.theme} avec des expressions plus complexes.`;
+                break;
+            case 'B2':
+                response = `Pour approfondir ${config.theme}, explorons des situations plus nuancées.`;
+                break;
+            default:
+                response = `Je comprends votre message concernant ${config.theme}. Comment puis-je vous aider ?`;
+        }
+
+        addBotMessage(response);
+    }, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
