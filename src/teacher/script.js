@@ -1,4 +1,4 @@
-// État global et configuration
+// État global
 let currentConfig = {
     theme: '',
     niveau: '',
@@ -16,7 +16,7 @@ let currentConfig = {
 let speechSynthesis = window.speechSynthesis;
 let botVoice = null;
 
-// Initialisation de la voix portugaise
+// Fonctions vocales
 function initBotVoice() {
     speechSynthesis.addEventListener('voiceschanged', () => {
         const voices = speechSynthesis.getVoices();
@@ -24,10 +24,9 @@ function initBotVoice() {
     });
 }
 
-// Synthèse vocale pour le bot
 function speakBotMessage(text) {
     if (speechSynthesis && botVoice) {
-        speechSynthesis.cancel(); // Arrête toute synthèse en cours
+        speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.voice = botVoice;
         utterance.lang = 'pt-BR';
@@ -36,96 +35,109 @@ function speakBotMessage(text) {
     }
 }
 
-// Fonctions de réponses thématiques
-function getThematicResponse(message, theme, level) {
-    const responses = {
-        'viagens': {
-            'A1': getA1TravelResponses(message),
-            'A2': getA2TravelResponses(message),
-            'B1': getB1TravelResponses(message),
-            'B2': getB2TravelResponses(message)
-        },
-        'gastronomia': {
-            'A1': getA1FoodResponses(message),
-            'A2': getA2FoodResponses(message),
-            'B1': getB1FoodResponses(message),
-            'B2': getB2FoodResponses(message)
-        }
-    };
+// Fonctions pour les chips
+function addChip(containerId, inputId) {
+    const container = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    const value = input.value.trim();
     
-    return responses[theme]?.[level] || getDefaultResponse(message);
-}
-
-// Réponses pour le thème Voyages
-function getA1TravelResponses(message) {
-    const messageLC = message.toLowerCase();
-    const responses = {
-        'gost': ['Legal! Para onde você quer viajar?', 'Que bom! Você prefere praia ou montanha?'],
-        'praia': ['A praia é muito bonita! Você nada no mar?'],
-        'montanha': ['As montanhas são lindas! Você gosta de fazer trilha?'],
-        'default': ['Me conte mais...', 'Que interessante! Continue...']
-    };
-
-    return chooseResponse(messageLC, responses);
-}
-
-function getA2TravelResponses(message) {
-    const messageLC = message.toLowerCase();
-    const responses = {
-        'hotel': ['Você prefere hotel ou pousada?'],
-        'transport': ['Como você prefere viajar: de avião ou de carro?'],
-        'país': ['Você já viajou para outro país?'],
-        'default': ['Conte mais sobre sua experiência...']
-    };
-
-    return chooseResponse(messageLC, responses);
-}
-
-// Fonctions utilitaires
-function chooseResponse(message, responses) {
-    for (const [key, options] of Object.entries(responses)) {
-        if (message.includes(key)) {
-            return options[Math.floor(Math.random() * options.length)];
-        }
-    }
-    return responses.default[Math.floor(Math.random() * responses.default.length)];
-}
-
-// Gestion des messages du chatbot
-function generateBotResponse(userMessage) {
-    setTimeout(() => {
-        const response = getThematicResponse(userMessage, currentConfig.theme, currentConfig.niveau);
-        const correction = currentConfig.correction_style === 'immediate' ? 
-            getCorrection(userMessage.toLowerCase()) : null;
-
-        addBotMessage(correction ? `${response}\n💡 ${correction}` : response);
-    }, 1000);
-}
-
-function addBotMessage(message) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (messagesContainer) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'chat-message bot-message';
-        messageDiv.textContent = message;
-        messagesContainer.appendChild(messageDiv);
-        scrollToBottom();
-        speakBotMessage(message);
+    if (value) {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `${value}<button type="button" onclick="removeChip(this)">&times;</button>`;
+        container.appendChild(chip);
+        input.value = '';
+        updateAddButton(containerId);
+        updateFormState();
     }
 }
 
-function addUserMessage(message) {
-    const messagesContainer = document.getElementById('chatMessages');
-    if (messagesContainer) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'chat-message user-message';
-        messageDiv.textContent = message;
-        messagesContainer.appendChild(messageDiv);
-        scrollToBottom();
+function removeChip(button) {
+    const chip = button.parentElement;
+    const container = chip.parentElement;
+    chip.remove();
+    updateAddButton(container.id);
+    updateFormState();
+}
+
+function updateAddButton(containerId) {
+    const container = document.getElementById(containerId);
+    const addButton = container.nextElementSibling.querySelector('button');
+    if (container.children.length === 0) {
+        addButton.classList.add('empty');
+    } else {
+        addButton.classList.remove('empty');
     }
 }
 
-// Gestion de la reconnaissance vocale
+function getChipsValues(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return [];
+    return Array.from(container.children)
+        .map(chip => chip.textContent.trim().replace('×', ''))
+        .filter(text => text.length > 0);
+}
+
+// Gestion des modales
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.offsetHeight;
+        modal.classList.add('visible');
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('visible');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+}
+
+// Vérification de la configuration
+function verifierConfig() {
+    updateFormState();
+    
+    document.getElementById('review-info').innerHTML = `
+        <p><strong>Thème:</strong> ${currentConfig.theme}</p>
+        <p><strong>Niveau:</strong> ${currentConfig.niveau}</p>
+        <p><strong>Contexte:</strong> ${currentConfig.contexte}</p>
+    `;
+
+    document.getElementById('review-chatbot').innerHTML = `
+        <p><strong>Rôle:</strong> ${currentConfig.role}</p>
+        <p><strong>Personnalité:</strong> ${currentConfig.personnalite}</p>
+        <p><strong>Objectifs:</strong></p>
+        <div>${currentConfig.objectifs.map(obj => `<span class="badge">${obj}</span>`).join(' ')}</div>
+    `;
+
+    document.getElementById('review-params').innerHTML = `
+        <p><strong>Structures grammaticales:</strong></p>
+        <div>${currentConfig.structures.map(str => `<span class="badge">${str}</span>`).join(' ')}</div>
+        <p><strong>Vocabulaire:</strong></p>
+        <div>${currentConfig.vocabulaire.map(voc => `<span class="badge">${voc}</span>`).join(' ')}</div>
+        <p><strong>Style de correction:</strong> ${currentConfig.correction_style}</p>
+        <p><strong>Niveau d'aide:</strong> ${currentConfig.aide_niveau}</p>
+    `;
+
+    showModal('verificationModal');
+}
+
+// Fonctions du chat
+function handleChatMessage(event) {
+    event.preventDefault();
+    const userInput = document.getElementById('userInput');
+    const message = userInput.value.trim();
+    
+    if (message) {
+        addUserMessage(message);
+        userInput.value = '';
+        generateBotResponse(message);
+    }
+}
+
 function handleVoiceInput(event) {
     event.preventDefault();
     const voiceButton = event.currentTarget;
@@ -159,32 +171,117 @@ function handleVoiceInput(event) {
         };
 
         recognition.start();
+    } else {
+        alert('O reconhecimento de voz não é suportado pelo seu navegador.');
     }
 }
 
-// Corrections grammaticales
-function getCorrection(message) {
-    const corrections = {
-        'eu tem': 'seria "eu tenho"',
-        'voce pode': 'com acento: "você pode"',
-        'nós vai': 'seria "nós vamos"',
-        'eles tem': 'com acento: "eles têm"'
+function generateBotResponse(userMessage) {
+    setTimeout(() => {
+        const messageLC = userMessage.toLowerCase();
+        let response = '';
+
+        if (messageLC.includes('oi') || messageLC.includes('olá')) {
+            response = 'Oi! Tudo bem? Como posso ajudar você hoje?';
+        } else if (messageLC.includes('?')) {
+            response = 'Boa pergunta! Vamos explorar isso juntos.';
+        } else {
+            response = 'Me conte mais sobre isso...';
+        }
+
+        addBotMessage(response);
+    }, 1000);
+}
+
+function addUserMessage(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message user-message';
+        messageDiv.textContent = message;
+        messagesContainer.appendChild(messageDiv);
+        scrollToBottom();
+    }
+}
+
+function addBotMessage(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chat-message bot-message';
+        messageDiv.textContent = message;
+        messagesContainer.appendChild(messageDiv);
+        scrollToBottom();
+        speakBotMessage(message);
+    }
+}
+
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// Mise à jour de l'état
+function updateFormState() {
+    currentConfig = {
+        theme: document.getElementById('theme').value,
+        niveau: document.getElementById('niveau').value,
+        contexte: document.getElementById('contexte').value,
+        role: document.getElementById('role').value,
+        personnalite: document.getElementById('personnalite').value,
+        objectifs: getChipsValues('objectifs'),
+        structures: getChipsValues('structures'),
+        vocabulaire: getChipsValues('vocabulaire'),
+        correction_style: document.getElementById('correction_style').value,
+        aide_niveau: document.getElementById('aide_niveau').value
     };
 
-    for (const [error, correction] of Object.entries(corrections)) {
-        if (message.includes(error)) {
-            return correction;
-        }
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages && chatMessages.children.length === 0) {
+        addBotMessage(`Olá! Vamos praticar ${currentConfig.theme}?`);
     }
-    return null;
 }
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
     initBotVoice();
-    updateFormState();
 
-    // Gestion des événements
+    ['objectifs', 'structures', 'vocabulaire'].forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            updateAddButton(id);
+            container.setAttribute('role', 'list');
+        }
+    });
+
+    const form = document.getElementById('configForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            closeModal('verificationModal');
+            const saveSuccess = await saveToFirestore(currentConfig);
+            if (saveSuccess) {
+                showModal('successModal');
+            } else {
+                alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.');
+            }
+        });
+    }
+
+    ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addChip(this.id.replace('new', '').toLowerCase(), this.id);
+                }
+            });
+        }
+    });
+
     const userInput = document.getElementById('userInput');
     if (userInput) {
         userInput.addEventListener('keypress', function(e) {
@@ -195,7 +292,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Message de bienvenue
-    const welcomeMessage = `Olá! Vamos praticar ${currentConfig.theme}?`;
-    addBotMessage(welcomeMessage);
+    updateFormState();
+
+    const formInputs = document.querySelectorAll('input, select, textarea');
+    formInputs.forEach(input => {
+        input.addEventListener('change', updateFormState);
+        input.addEventListener('input', updateFormState);
+    });
 });
