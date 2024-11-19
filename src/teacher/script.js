@@ -1,4 +1,4 @@
-// État global
+// Configuration globale et état
 let currentConfig = {
     theme: '',
     niveau: '',
@@ -12,25 +12,105 @@ let currentConfig = {
     aide_niveau: 'minimal'
 };
 
-// Fonctions utilitaires (placées en haut pour être disponibles partout)
+// Fonctions utilitaires principales
 function getGreetingByTime() {
     const hour = new Date().getHours();
-    if (hour < 12) return "Bom dia!";
-    if (hour < 18) return "Boa tarde!";
-    return "Boa noite!";
+    if (hour < 12) return "Bom dia";
+    if (hour < 18) return "Boa tarde";
+    return "Boa noite";
 }
 
 function getHintByLevel(level) {
     switch(level) {
-        case 'A1': return "Vou usar frases simples e claras.";
-        case 'A2': return "Podemos praticar situações do dia a dia.";
-        case 'B1': return "Vamos conversar sobre temas mais complexos.";
-        case 'B2': return "Podemos discutir temas avançados e aspectos culturais.";
+        case 'A1': return "Vou usar frases simples e claras";
+        case 'A2': return "Podemos praticar situações do dia a dia";
+        case 'B1': return "Vamos conversar sobre temas mais complexos";
+        case 'B2': return "Podemos discutir temas avançados";
         default: return "Como posso ajudar você hoje?";
     }
 }
 
-// Fonctions de gestion des chips (tags)
+// Fonctions de conversation naturelle
+function getPreferenceResponse(theme) {
+    const preferences = {
+        'viagens': 'Adoro viajar! Conhecer lugares novos é muito especial',
+        'comida': 'A culinária brasileira é maravilhosa! Você já provou feijoada?',
+        'esportes': 'Futebol, vôlei... O Brasil é o país do esporte!',
+        'música': 'A música brasileira é muito rica. Do samba ao funk',
+        'cultura': 'A cultura brasileira é muito diversa e colorida',
+        default: `${theme} é um assunto fascinante! Qual sua experiência com isso?`
+    };
+    return preferences[theme.toLowerCase()] || preferences.default;
+}
+
+function getA1Response(message) {
+    if (message.includes('?')) {
+        return `Sim! ${getSimpleContext(currentConfig.theme)}. E você?`;
+    }
+    return `Legal! Me conte mais sobre isso.`;
+}
+
+function getA2Response(message) {
+    if (message.includes('porque')) {
+        return `Ah, entendi! ${getSimpleContext(currentConfig.theme)}. O que você acha?`;
+    }
+    return `Que interessante! Quer me contar mais?`;
+}
+
+function getB1Response(message) {
+    if (message.includes('acho')) {
+        return `Seu ponto de vista é muito interessante! ${getComplexContext(currentConfig.theme)}`;
+    }
+    return `Que legal sua opinião! Vamos explorar mais esse assunto?`;
+}
+
+function getB2Response(message) {
+    const contexts = getComplexContext(currentConfig.theme);
+    return `${contexts}. Como você vê isso na sua experiência?`;
+}
+
+function getSimpleContext(theme) {
+    const contexts = {
+        'viagens': 'viajar nos traz muitas experiências novas',
+        'comida': 'cada região tem seus pratos típicos',
+        'esportes': 'fazer esporte é bom para a saúde',
+        'música': 'a música expressa nossos sentimentos',
+        'cultura': 'cada lugar tem seus costumes especiais',
+        default: `${theme} faz parte do nosso dia a dia`
+    };
+    return contexts[theme.toLowerCase()] || contexts.default;
+}
+
+function getComplexContext(theme) {
+    const contexts = {
+        'viagens': 'cada viagem nos transforma de alguma forma',
+        'comida': 'a gastronomia conta a história de um povo',
+        'esportes': 'o esporte une as pessoas de maneira única',
+        'música': 'a música reflete as mudanças da sociedade',
+        'cultura': 'a diversidade cultural nos enriquece',
+        default: `${theme} tem múltiplas perspectivas interessantes`
+    };
+    return contexts[theme.toLowerCase()] || contexts.default;
+}
+
+function getCorrection(message) {
+    const corrections = {
+        'eu tem': 'usamos "eu tenho"',
+        'voce pode': 'não esqueça o acento em "você"',
+        'nós vai': 'usamos "nós vamos"',
+        'eles tem': 'usamos "eles têm"',
+        'tu é': 'usamos "tu és"'
+    };
+    
+    for (let error in corrections) {
+        if (message.includes(error)) {
+            return corrections[error];
+        }
+    }
+    return null;
+}
+
+// Gestion des chips (tags)
 function addChip(containerId, inputId) {
     const container = document.getElementById(containerId);
     const input = document.getElementById(inputId);
@@ -58,12 +138,7 @@ function removeChip(button) {
 function updateAddButton(containerId) {
     const container = document.getElementById(containerId);
     const addButton = container.nextElementSibling.querySelector('button');
-    
-    if (container.children.length === 0) {
-        addButton.classList.add('empty');
-    } else {
-        addButton.classList.remove('empty');
-    }
+    addButton.classList.toggle('empty', container.children.length === 0);
 }
 
 function getChipsValues(containerId) {
@@ -74,7 +149,7 @@ function getChipsValues(containerId) {
         .filter(text => text.length > 0);
 }
 
-// Fonctions de gestion des modales
+// Gestion des modales
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -88,37 +163,11 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('visible');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
+        setTimeout(() => modal.style.display = 'none', 300);
     }
 }
 
 // Fonctions principales
-function updateFormState() {
-    currentConfig = {
-        theme: document.getElementById('theme').value,
-        niveau: document.getElementById('niveau').value,
-        contexte: document.getElementById('contexte').value,
-        role: document.getElementById('role').value,
-        personnalite: document.getElementById('personnalite').value,
-        objectifs: getChipsValues('objectifs'),
-        structures: getChipsValues('structures'),
-        vocabulaire: getChipsValues('vocabulaire'),
-        correction_style: document.getElementById('correction_style').value,
-        aide_niveau: document.getElementById('aide_niveau').value
-    };
-
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages && chatMessages.children.length === 0) {
-        const welcomeMessage = `Olá! ${getGreetingByTime()} 
-                              Sou ${currentConfig.role || 'seu assistente'} ${currentConfig.personnalite || 'amigável'}. 
-                              Vamos praticar ${currentConfig.theme || 'português'}? 
-                              ${getHintByLevel(currentConfig.niveau)}`;
-        addBotMessage(welcomeMessage);
-    }
-}
-
 function verifierConfig() {
     updateFormState();
     
@@ -147,7 +196,31 @@ function verifierConfig() {
     showModal('verificationModal');
 }
 
-// Fonctions de chat
+function updateFormState() {
+    currentConfig = {
+        theme: document.getElementById('theme').value,
+        niveau: document.getElementById('niveau').value,
+        contexte: document.getElementById('contexte').value,
+        role: document.getElementById('role').value,
+        personnalite: document.getElementById('personnalite').value,
+        objectifs: getChipsValues('objectifs'),
+        structures: getChipsValues('structures'),
+        vocabulaire: getChipsValues('vocabulaire'),
+        correction_style: document.getElementById('correction_style').value,
+        aide_niveau: document.getElementById('aide_niveau').value
+    };
+
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages && chatMessages.children.length === 0) {
+        const welcomeMessage = `${getGreetingByTime()}! 
+                              Sou ${currentConfig.role || 'seu assistente'} ${currentConfig.personnalite || 'amigável'}. 
+                              Vamos conversar sobre ${currentConfig.theme || 'vários assuntos'}? 
+                              ${getHintByLevel(currentConfig.niveau)}`;
+        addBotMessage(welcomeMessage);
+    }
+}
+
+// Gestion du chat
 function handleChatMessage(event) {
     event.preventDefault();
     const userInput = document.getElementById('userInput');
@@ -172,7 +245,7 @@ function handleVoiceInput(event) {
 
         recognition.onstart = () => {
             voiceButton.style.backgroundColor = '#dc3545';
-            addBotMessage("Estou ouvindo... Pode falar!");
+            addBotMessage("Pode falar! Estou ouvindo...");
         };
 
         recognition.onend = () => {
@@ -187,7 +260,7 @@ function handleVoiceInput(event) {
 
         recognition.onerror = (event) => {
             if (event.error === 'no-speech') {
-                addBotMessage("Não ouvi nada. Pode repetir, por favor?");
+                addBotMessage("Não ouvi nada. Pode falar de novo?");
             }
         };
 
@@ -195,6 +268,48 @@ function handleVoiceInput(event) {
     } else {
         alert('O reconhecimento de voz não é suportado pelo seu navegador.');
     }
+}
+
+function generateBotResponse(userMessage) {
+    setTimeout(() => {
+        const userMessageLower = userMessage.toLowerCase();
+        let response = '';
+
+        // Salutations
+        if (userMessageLower.includes('oi') || userMessageLower.includes('olá')) {
+            response = `${getGreetingByTime()}! Que bom conversar sobre ${currentConfig.theme}!`;
+            addBotMessage(response);
+            return;
+        }
+
+        // Questions personnelles
+        if (userMessageLower.includes('você') || userMessageLower.includes('voce')) {
+            if (userMessageLower.includes('gosta')) {
+                response = getPreferenceResponse(currentConfig.theme);
+                addBotMessage(response);
+                return;
+            }
+        }
+
+        // Réponses selon niveau
+        switch(currentConfig.niveau) {
+            case 'A1': response = getA1Response(userMessageLower); break;
+            case 'A2': response = getA2Response(userMessageLower); break;
+            case 'B1': response = getB1Response(userMessageLower); break;
+            case 'B2': response = getB2Response(userMessageLower); break;
+            default: response = `Que interessante! Vamos falar mais sobre isso?`;
+        }
+
+        // Correction si nécessaire
+        if (currentConfig.correction_style === 'immediate') {
+            const correction = getCorrection(userMessageLower);
+            if (correction) {
+                response += `\n💡 Dica: ${correction}`;
+            }
+        }
+
+        addBotMessage(response);
+    }, 1000);
 }
 
 function addUserMessage(message) {
@@ -217,56 +332,6 @@ function addBotMessage(message) {
         messagesContainer.appendChild(messageDiv);
         scrollToBottom();
     }
-}
-
-function generateBotResponse(userMessage) {
-    setTimeout(() => {
-        const themeVocabulary = currentConfig.vocabulaire.join(', ');
-        const userMessageLower = userMessage.toLowerCase();
-        let response = '';
-        let correction = '';
-
-        if (currentConfig.correction_style === 'immediate') {
-            if (userMessageLower.includes('eu tem')) {
-                correction = "\n💡 Correção: Use 'eu tenho' em vez de 'eu tem'.";
-            } else if (userMessageLower.includes('voce pode')) {
-                correction = "\n💡 Correção: Não esqueça do acento em 'você'.";
-            }
-        }
-
-        switch(currentConfig.niveau) {
-            case 'A1':
-                response = userMessageLower.includes('?') 
-                    ? `Vou responder de forma simples. Algumas palavras úteis sobre ${currentConfig.theme}: ${themeVocabulary}`
-                    : `Muito bem! Vamos praticar mais? Tente usar estas palavras: ${themeVocabulary.split(',')[0]}`;
-                break;
-            case 'A2':
-                response = userMessageLower.includes('como')
-                    ? `Para explicar ${currentConfig.theme}, podemos usar: ${themeVocabulary}. Quer tentar formar uma frase?`
-                    : `Boa! Agora vamos tentar usar algumas expressões mais comuns.`;
-                break;
-            case 'B1':
-                response = userMessageLower.includes('pode')
-                    ? `Claro! Em ${currentConfig.theme}, existem várias maneiras de se expressar. Que tal usarmos algumas expressões idiomáticas?`
-                    : `Você está se expressando bem! Vamos explorar vocabulário mais específico?`;
-                break;
-            case 'B2':
-                response = `Excelente colocação! No contexto de ${currentConfig.theme}, podemos aprofundar mais. O que você acha de discutirmos aspectos culturais?`;
-                break;
-            default:
-                response = `Que interessante! Vamos explorar mais esse tema?`;
-        }
-
-        if (currentConfig.objectifs.length > 0) {
-            response += `\n\n🎯 Objetivo: ${currentConfig.objectifs[0]}`;
-        }
-
-        if (correction) {
-            response += correction;
-        }
-
-        addBotMessage(response);
-    }, 1000);
 }
 
 function scrollToBottom() {
@@ -300,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Gestion des touches
     ['newObjectif', 'newStructure', 'newVocab'].forEach(inputId => {
         const input = document.getElementById(inputId);
         if (input) {
@@ -322,8 +388,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Initialisation du formulaire
     updateFormState();
 
+    // Mise à jour en temps réel
     const formInputs = document.querySelectorAll('input, select, textarea');
     formInputs.forEach(input => {
         input.addEventListener('change', updateFormState);
