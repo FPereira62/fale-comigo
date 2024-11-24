@@ -315,6 +315,20 @@ function createNewActivity() {
 }
 
 // Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM Loaded"); // Debug
+
+    // Gérer le bouton Nouvelle Activité
+    const newActivityBtn = document.getElementById('newActivityBtn');
+    console.log("Bouton trouvé:", newActivityBtn); // Debug
+    
+    if (newActivityBtn) {
+        newActivityBtn.addEventListener('click', function() {
+            console.log("Bouton cliqué"); // Debug
+            resetForm();
+            ViewManager.showConfigForm();
+        });
+    }
 
     // Gérer le formulaire
     const form = document.getElementById('configForm');
@@ -354,4 +368,7 @@ function createNewActivity() {
         input.addEventListener('change', updateFormState);
         input.addEventListener('input', updateFormState);
     });
+
+    // Charger la liste initiale
+    loadActivities();
 });
