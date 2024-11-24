@@ -3,190 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration de l'activité</title>
+    <title>Fale Comigo - Interface Professeur</title>
+    <link href="styles.css" rel="stylesheet">
     
-    <!-- Firebase Scripts -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
-    <!-- Configuration Firebase -->
     <script src="firebase-config.js"></script>
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Configuration de l'activité</h1>
-        
-        <form id="configForm">
-            <!-- Section Informations générales -->
-            <div class="section">
-                <h2>Informations générales</h2>
-                <div class="form-group">
-                    <label for="theme">Thème de l'activité</label>
-                    <input type="text" id="theme" name="theme" required>
-                </div>
-                <div class="form-group">
-                    <label for="niveau">Niveau</label>
-                    <select id="niveau" name="niveau" required>
-                        <option value="">Sélectionnez un niveau</option>
-                        <option value="A1">A1 - Débutant</option>
-                        <option value="A2">A2 - Élémentaire</option>
-                        <option value="B1">B1 - Intermédiaire</option>
-                        <option value="B2">B2 - Avancé</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="contexte">Contexte</label>
-                    <textarea id="contexte" name="contexte" required></textarea>
-                </div>
-            </div>
+    <!-- En-tête de la page -->
+    <header class="header">
+        <h1>Fale Comigo</h1>
+        <nav class="main-nav">
+            <button id="newActivityBtn" class="btn-new-activity">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Nouvelle activité
+            </button>
+        </nav>
+    </header>
 
-            <!-- Section Configuration du Chatbot -->
-            <div class="section">
-                <h2>Configuration du Chatbot</h2>
-                <div class="form-group">
-                    <label for="role">Rôle</label>
-                    <input type="text" id="role" name="role" required>
-                </div>
-                <div class="form-group">
-                    <label for="personnalite">Personnalité</label>
-                    <input type="text" id="personnalite" name="personnalite" required>
-                </div>
-                <div class="form-group">
-                    <label>Objectifs pédagogiques</label>
-                    <div id="objectifs" class="chips-container" role="list"></div>
-                    <div class="add-item">
-                        <input type="text" id="newObjectif">
-                        <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
+    <!-- Liste des activités -->
+    <main class="container">
+        <section class="activities-container">
+            <header class="activities-header">
+                <h2>Mes activités</h2>
+            </header>
+            <div id="activitiesList" class="activities-list">
+                <!-- Les activités seront injectées ici via JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de configuration -->
+    <div id="configModal" class="modal" role="dialog">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Configuration de l'activité</h2>
+                <button class="close" onclick="closeModal('configModal')">&times;</button>
+            </header>
+
+            <form id="configForm">
+                <!-- Informations générales -->
+                <section class="section">
+                    <h3>Informations générales</h3>
+                    <div class="form-group">
+                        <label for="theme">Thème de l'activité</label>
+                        <input type="text" id="theme" name="theme" required>
                     </div>
-                </div>
-            </div>
 
-            <!-- Section Paramètres linguistiques -->
-            <div class="section">
-                <h2>Paramètres linguistiques</h2>
-                <div class="form-group">
-                    <label>Structures grammaticales</label>
-                    <div id="structures" class="chips-container" role="list"></div>
-                    <div class="add-item">
-                        <input type="text" id="newStructure">
-                        <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
+                    <div class="form-group">
+                        <label for="niveau">Niveau</label>
+                        <select id="niveau" name="niveau" required>
+                            <option value="">Sélectionnez un niveau</option>
+                            <option value="A1">A1 - Débutant</option>
+                            <option value="A2">A2 - Élémentaire</option>
+                            <option value="B1">B1 - Intermédiaire</option>
+                            <option value="B2">B2 - Avancé</option>
+                        </select>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Vocabulaire cible</label>
-                    <div id="vocabulaire" class="chips-container" role="list"></div>
-                    <div class="add-item">
-                        <input type="text" id="newVocab">
-                        <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
+
+                    <div class="form-group">
+                        <label for="contexte">Contexte</label>
+                        <textarea id="contexte" name="contexte" required></textarea>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Section Style d'interaction -->
-            <div class="section">
-                <h2>Style d'interaction</h2>
-                <div class="form-group">
-                    <label for="correction_style">Style de correction</label>
-                    <select id="correction_style" name="correction_style" required>
-                        <option value="immediate">Correction immédiate</option>
-                        <option value="delayed">Correction différée</option>
-                        <option value="selective">Correction sélective</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="aide_niveau">Niveau d'aide</label>
-                    <select id="aide_niveau" name="aide_niveau" required>
-                        <option value="minimal">Minimal - Peu d'indices</option>
-                        <option value="modere">Modéré - Quelques suggestions</option>
-                        <option value="important">Important - Beaucoup d'aide</option>
-                    </select>
-                </div>
-            </div>
+                <!-- Configuration du Chatbot -->
+                <section class="section">
+                    <h3>Configuration du Chatbot</h3>
+                    <div class="form-group">
+                        <label for="role">Rôle</label>
+                        <input type="text" id="role" name="role" required>
+                    </div>
 
-            <!-- Section Prévisualisation -->
-            <div class="section preview-section">
-                <h2>Prévisualisation du Chatbot</h2>
-                <div id="chatbotPreview" class="preview-container">
-                    <div class="chat-container">
-                        <div id="chatMessages" class="chat-messages"></div>
-                        <div class="chat-input">
-                            <input type="text" id="userInput" placeholder="Écrivez votre message...">
-                            <button type="button" class="send-button" onclick="handleChatMessage(event)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
-                            <button type="button" class="voice-button" onclick="handleVoiceInput(event)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
+                    <div class="form-group">
+                        <label for="personnalite">Personnalité</label>
+                        <input type="text" id="personnalite" name="personnalite" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Objectifs pédagogiques</label>
+                        <div id="objectifs" class="chips-container" role="list"></div>
+                        <div class="add-item">
+                            <input type="text" id="newObjectif" placeholder="Ajouter un objectif">
+                            <button type="button" onclick="addChip('objectifs', 'newObjectif')">+</button>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Contrôles -->
-            <div class="controls">
-                <button type="button" onclick="verifierConfig()" class="secondary">Vérifier</button>
-                <button type="submit" class="primary">Sauvegarder</button>
-            </div>
-        </form>
+                <!-- Paramètres linguistiques -->
+                <section class="section">
+                    <h3>Paramètres linguistiques</h3>
+                    <div class="form-group">
+                        <label>Structures grammaticales</label>
+                        <div id="structures" class="chips-container" role="list"></div>
+                        <div class="add-item">
+                            <input type="text" id="newStructure" placeholder="Ajouter une structure">
+                            <button type="button" onclick="addChip('structures', 'newStructure')">+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vocabulaire cible</label>
+                        <div id="vocabulaire" class="chips-container" role="list"></div>
+                        <div class="add-item">
+                            <input type="text" id="newVocab" placeholder="Ajouter du vocabulaire">
+                            <button type="button" onclick="addChip('vocabulaire', 'newVocab')">+</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Style d'interaction -->
+                <section class="section">
+                    <h3>Style d'interaction</h3>
+                    <div class="form-group">
+                        <label for="correction_style">Style de correction</label>
+                        <select id="correction_style" name="correction_style" required>
+                            <option value="immediate">Correction immédiate</option>
+                            <option value="delayed">Correction différée</option>
+                            <option value="selective">Correction sélective</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aide_niveau">Niveau d'aide</label>
+                        <select id="aide_niveau" name="aide_niveau" required>
+                            <option value="minimal">Minimal - Peu d'indices</option>
+                            <option value="moderate">Modéré - Quelques suggestions</option>
+                            <option value="important">Important - Beaucoup d'aide</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Prévisualisation -->
+                <section class="section preview-section">
+                    <h3>Prévisualisation du Chatbot</h3>
+                    <div id="chatbotPreview" class="preview-container">
+                        <div class="chat-container">
+                            <div id="chatMessages" class="chat-messages"></div>
+                            <div class="chat-input">
+                                <input type="text" id="userInput" placeholder="Écrivez votre message...">
+                                <button type="button" class="voice-button" onclick="handleVoiceInput(event)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                                <button type="button" class="send-button" onclick="handleChatMessage(event)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contrôles -->
+                <footer class="modal-footer">
+                    <button type="button" class="secondary" onclick="closeModal('configModal')">Annuler</button>
+                    <button type="button" class="primary" onclick="verifierConfig()">Vérifier</button>
+                </footer>
+            </form>
+        </div>
     </div>
 
     <!-- Modal de vérification -->
     <div id="verificationModal" class="modal" role="dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <header class="modal-header">
                 <h2>Vérification de la configuration</h2>
-                <button type="button" class="close" onclick="closeModal('verificationModal')">&times;</button>
-            </div>
-            <div class="modal-section">
+                <button class="close" onclick="closeModal('verificationModal')">&times;</button>
+            </header>
+
+            <section class="modal-section">
                 <h3>Informations générales</h3>
                 <div id="review-info"></div>
-            </div>
-            <div class="modal-section">
+            </section>
+
+            <section class="modal-section">
                 <h3>Configuration du Chatbot</h3>
                 <div id="review-chatbot"></div>
-            </div>
-            <div class="modal-section">
+            </section>
+
+            <section class="modal-section">
                 <h3>Paramètres linguistiques</h3>
                 <div id="review-params"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" onclick="closeModal('verificationModal')" class="secondary">Modifier</button>
+            </section>
+
+            <footer class="modal-footer">
+                <button type="button" class="secondary" onclick="closeModal('verificationModal')">Modifier</button>
                 <button type="submit" form="configForm" class="primary">Confirmer</button>
-            </div>
+            </footer>
         </div>
     </div>
 
     <!-- Modal de succès -->
     <div id="successModal" class="modal" role="dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <header class="modal-header">
                 <h2>Configuration sauvegardée</h2>
-                <button type="button" class="close" onclick="closeModal('successModal')">&times;</button>
-            </div>
+                <button class="close" onclick="closeModal('successModal')">&times;</button>
+            </header>
+
             <div class="success-modal-content">
                 <div class="feedback success">
                     L'activité a été sauvegardée avec succès !
                 </div>
-                <div class="future-feature-notice">
-                    La fonctionnalité "Voir les activités" sera bientôt disponible. 
-                    Vous pourrez alors consulter et gérer toutes vos activités créées.
-                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" onclick="resetForm()" class="secondary">Nouvelle activité</button>
-                <button type="button" onclick="closeModal('successModal')" class="primary">Fermer</button>
-            </div>
+
+            <footer class="modal-footer">
+                <button type="button" class="secondary" onclick="closeModal('successModal')">Fermer</button>
+                <button type="button" class="primary" onclick="resetForm(); closeModal('successModal')">Nouvelle activité</button>
+            </footer>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <script src="components/ChatbotPreview.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
