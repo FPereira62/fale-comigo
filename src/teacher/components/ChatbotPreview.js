@@ -40,7 +40,7 @@ class ChatbotPreview {
                 </div>
             </div>
         `;
-
+    
         // Ajout des écouteurs d'événements
         const input = document.getElementById('userInput');
         input.addEventListener('keypress', (e) => {
@@ -49,9 +49,11 @@ class ChatbotPreview {
                 this.handleChatMessage();
             }
         });
-
-        // Message d'accueil
-        this.addBotMessage(this.getWelcomeMessage());
+    
+        // Message d'accueil uniquement si les informations nécessaires sont disponibles
+        if (this.config.theme && this.config.role) {
+            this.addBotMessage(this.getWelcomeMessage());
+        }
     }
 
     getWelcomeMessage() {

@@ -269,7 +269,10 @@ function updateFormState() {
     };
 
     currentConfig = { ...currentConfig, ...formData };
-    updateChatbotPreview();
+    // Ne mettre à jour la prévisualisation que si les champs requis sont remplis
+    if (formData.theme && formData.role) {
+        updateChatbotPreview();
+    }
 }
 
 // Utilitaires
