@@ -12,39 +12,43 @@
     <script src="firebase-config.js"></script>
 </head>
 <body>
-    <!-- En-tête de la page -->
+    <!-- En-tête -->
     <header class="header">
-        <h1>Fale Comigo</h1>
-        <nav class="main-nav">
-            <button id="newActivityBtn" class="btn-new-activity">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                Nouvelle activité
-            </button>
-        </nav>
+        <div class="header-content">
+            <h1>Fale Comigo</h1>
+            <div class="header-actions">
+                <button id="newActivityBtn" class="btn-new-activity">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Nouvelle activité
+                </button>
+            </div>
+        </div>
     </header>
 
-    <!-- Liste des activités -->
+    <!-- Contenu principal -->
     <main class="container">
-        <section class="activities-container">
+        <section class="activities-container" id="activitiesView">
             <header class="activities-header">
                 <h2>Mes activités</h2>
+                <div class="activities-filters">
+                    <select id="filterLevel" class="filter-select">
+                        <option value="">Tous les niveaux</option>
+                        <option value="A1">A1 - Débutant</option>
+                        <option value="A2">A2 - Élémentaire</option>
+                        <option value="B1">B1 - Intermédiaire</option>
+                        <option value="B2">B2 - Avancé</option>
+                    </select>
+                </div>
             </header>
             <div id="activitiesList" class="activities-list">
-                <!-- Les activités seront injectées ici via JavaScript -->
+                <!-- Liste des activités générée par JavaScript -->
             </div>
         </section>
-    </main>
 
-    <!-- Modal de configuration -->
-    <div id="configModal" class="modal" role="dialog">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2>Configuration de l'activité</h2>
-                <button class="close" onclick="closeModal('configModal')">&times;</button>
-            </header>
-
+        <!-- Formulaire de configuration -->
+        <section id="configView" class="config-container" style="display: none;">
             <form id="configForm">
                 <!-- Informations générales -->
                 <section class="section">
@@ -75,13 +79,15 @@
                 <section class="section">
                     <h3>Configuration du Chatbot</h3>
                     <div class="form-group">
-                        <label for="role">Rôle</label>
-                        <input type="text" id="role" name="role" required>
+                        <label for="role">Rôle du chatbot</label>
+                        <input type="text" id="role" name="role" required 
+                               placeholder="Ex: guide touristique, vendeur, ami...">
                     </div>
 
                     <div class="form-group">
-                        <label for="personnalite">Personnalité</label>
-                        <input type="text" id="personnalite" name="personnalite" required>
+                        <label for="personnalite">Personnalité du chatbot</label>
+                        <input type="text" id="personnalite" name="personnalite" required 
+                               placeholder="Ex: amical, professionnel, décontracté...">
                     </div>
 
                     <div class="form-group">
@@ -98,7 +104,7 @@
                 <section class="section">
                     <h3>Paramètres linguistiques</h3>
                     <div class="form-group">
-                        <label>Structures grammaticales</label>
+                        <label>Structures grammaticales à pratiquer</label>
                         <div id="structures" class="chips-container" role="list"></div>
                         <div class="add-item">
                             <input type="text" id="newStructure" placeholder="Ajouter une structure">
@@ -141,86 +147,42 @@
                 <!-- Prévisualisation -->
                 <section class="section preview-section">
                     <h3>Prévisualisation du Chatbot</h3>
-                    <div id="chatbotPreview" class="preview-container">
-                        <div class="chat-container">
-                            <div id="chatMessages" class="chat-messages"></div>
-                            <div class="chat-input">
-                                <input type="text" id="userInput" placeholder="Écrivez votre message...">
-                                <button type="button" class="voice-button" onclick="handleVoiceInput(event)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </button>
-                                <button type="button" class="send-button" onclick="handleChatMessage(event)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="chatbotPreview" class="preview-container"></div>
                 </section>
 
                 <!-- Contrôles -->
-                <footer class="modal-footer">
-                    <button type="button" class="secondary" onclick="closeModal('configModal')">Annuler</button>
-                    <button type="button" class="primary" onclick="verifierConfig()">Vérifier</button>
+                <footer class="form-footer">
+                    <button type="button" class="btn-secondary" onclick="cancelConfig()">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
                 </footer>
             </form>
-        </div>
-    </div>
+        </section>
+    </main>
 
-    <!-- Modal de vérification -->
-    <div id="verificationModal" class="modal" role="dialog">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2>Vérification de la configuration</h2>
-                <button class="close" onclick="closeModal('verificationModal')">&times;</button>
-            </header>
-
-            <section class="modal-section">
-                <h3>Informations générales</h3>
-                <div id="review-info"></div>
-            </section>
-
-            <section class="modal-section">
-                <h3>Configuration du Chatbot</h3>
-                <div id="review-chatbot"></div>
-            </section>
-
-            <section class="modal-section">
-                <h3>Paramètres linguistiques</h3>
-                <div id="review-params"></div>
-            </section>
-
-            <footer class="modal-footer">
-                <button type="button" class="secondary" onclick="closeModal('verificationModal')">Modifier</button>
-                <button type="submit" form="configForm" class="primary">Confirmer</button>
-            </footer>
-        </div>
-    </div>
-
-    <!-- Modal de succès -->
+    <!-- Modale de succès -->
     <div id="successModal" class="modal" role="dialog">
         <div class="modal-content">
             <header class="modal-header">
-                <h2>Configuration sauvegardée</h2>
+                <h2>Activité sauvegardée</h2>
                 <button class="close" onclick="closeModal('successModal')">&times;</button>
             </header>
-
-            <div class="success-modal-content">
-                <div class="feedback success">
-                    L'activité a été sauvegardée avec succès !
+            <div class="modal-body">
+                <div class="success-message">
+                    <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 4L12 14.01l-3-3" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p>L'activité a été sauvegardée avec succès !</p>
                 </div>
             </div>
-
             <footer class="modal-footer">
-                <button type="button" class="secondary" onclick="closeModal('successModal')">Fermer</button>
-                <button type="button" class="primary" onclick="resetForm(); closeModal('successModal')">Nouvelle activité</button>
+                <button class="btn-secondary" onclick="closeModal('successModal')">Fermer</button>
+                <button class="btn-primary" onclick="createNewActivity()">Nouvelle activité</button>
             </footer>
         </div>
     </div>
 
+    <!-- Composants et Scripts -->
     <script src="components/ChatbotPreview.js"></script>
     <script src="script.js"></script>
 </body>
