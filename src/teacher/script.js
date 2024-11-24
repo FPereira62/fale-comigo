@@ -319,6 +319,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Charger la liste des activités
     loadActivities();
 
+       // Gestion du bouton Nouvelle Activité
+       const newActivityBtn = document.getElementById('newActivityBtn');
+       if (newActivityBtn) {
+           newActivityBtn.addEventListener('click', function() {
+               resetForm();
+               ViewManager.showConfigForm();
+           });
+       }
+       
     // Gérer le formulaire
     const form = document.getElementById('configForm');
     if (form) {
