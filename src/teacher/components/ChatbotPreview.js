@@ -6,6 +6,7 @@ class ChatbotPreview {
         this.messages = [];
         this.voices = [];
         this.selectedVoice = null;
+        this.isInitialized = false;
         
         // Initialisation de la synthèse vocale
         if ('speechSynthesis' in window) {
@@ -17,22 +18,27 @@ class ChatbotPreview {
             });
         }
 
-        this.init();
+        // Initialiser seulement l'interface, pas le chat
+        this.initInterface();
     }
 
-    init() {
-        // Création de l'interface du chat
+    initInterface() {
+        // Création de l'interface du chat sans démarrer la conversation
         this.container.innerHTML = `
             <div class="chat-container">
-                <div id="chatMessages" class="chat-messages"></div>
+                <div id="chatMessages" class="chat-messages">
+                    <div class="chat-placeholder">
+                        Remplissez le formulaire pour voir la prévisualisation du chatbot
+                    </div>
+                </div>
                 <div class="chat-input">
-                    <input type="text" id="userInput" placeholder="Écrivez votre message...">
-                    <button type="button" class="voice-button" onclick="chatbotPreview.handleVoiceInput()">
+                    <input type="text" id="userInput" placeholder="Écrivez votre message..." disabled>
+                    <button type="button" class="voice-button" disabled>
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
-                    <button type="button" class="send-button" onclick="chatbotPreview.handleChatMessage()">
+                    <button type="button" class="send-button" disabled>
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
                             <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -40,20 +46,43 @@ class ChatbotPreview {
                 </div>
             </div>
         `;
-    
-        // Ajout des écouteurs d'événements
-        const input = document.getElementById('userInput');
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.handleChatMessage();
-            }
-        });
-    
-        // Message d'accueil uniquement si les informations nécessaires sont disponibles
-        if (this.config.theme && this.config.role) {
-            this.addBotMessage(this.getWelcomeMessage());
+    }
+
+    initChat() {
+        if (this.isInitialized) return;
+        
+        // Vérifier que tous les champs requis sont remplis
+        if (!this.config.theme || !this.config.role || !this.config.niveau) {
+            return;
         }
+
+        // Activer l'interface
+        const userInput = document.getElementById('userInput');
+        const voiceButton = document.querySelector('.voice-button');
+        const sendButton = document.querySelector('.send-button');
+        
+        if (userInput && voiceButton && sendButton) {
+            userInput.disabled = false;
+            voiceButton.disabled = false;
+            sendButton.disabled = false;
+
+            // Ajouter les écouteurs d'événements
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleChatMessage();
+                }
+            });
+
+            voiceButton.onclick = () => this.handleVoiceInput();
+            sendButton.onclick = () => this.handleChatMessage();
+        }
+
+        // Effacer le placeholder et ajouter le message d'accueil
+        document.getElementById('chatMessages').innerHTML = '';
+        this.addBotMessage(this.getWelcomeMessage());
+        
+        this.isInitialized = true;
     }
 
     getWelcomeMessage() {
@@ -113,18 +142,14 @@ class ChatbotPreview {
     }
 
     generateBotResponse(userMessage) {
-        // Simuler un délai de "réflexion"
         setTimeout(() => {
             let response;
             const messageLC = userMessage.toLowerCase();
 
-            // Logique de réponse basée sur la configuration
             if (this.config.structures.length > 0 && Math.random() > 0.5) {
-                // Utiliser une structure grammaticale comme exemple
                 const structure = this.config.structures[Math.floor(Math.random() * this.config.structures.length)];
                 response = `Você pode tentar usar esta estrutura: "${structure}". Quer tentar?`;
             } else if (this.config.vocabulaire.length > 0 && Math.random() > 0.7) {
-                // Suggérer du vocabulaire
                 const mot = this.config.vocabulaire[Math.floor(Math.random() * this.config.vocabulaire.length)];
                 response = `Você conhece a palavra "${mot}"? Pode usar em uma frase?`;
             } else if (messageLC.includes('?')) {
@@ -180,10 +205,16 @@ class ChatbotPreview {
 
     updateConfig(newConfig) {
         this.config = newConfig;
-        // Réinitialiser le chat avec la nouvelle configuration
-        this.messages = [];
-        document.getElementById('chatMessages').innerHTML = '';
-        this.addBotMessage(this.getWelcomeMessage());
+        
+        // Vérifier si nous devons initialiser ou réinitialiser le chat
+        if (!this.isInitialized && newConfig.theme && newConfig.role && newConfig.niveau) {
+            this.initChat();
+        } else if (this.isInitialized) {
+            // Réinitialiser le chat avec la nouvelle configuration
+            this.isInitialized = false;
+            this.messages = [];
+            this.initChat();
+        }
     }
 }
 
