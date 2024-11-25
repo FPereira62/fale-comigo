@@ -7,6 +7,8 @@ class ChatbotPreview {
         this.voices = [];
         this.selectedVoice = null;
         this.isInitialized = false;
+        this.messageCount = 0;
+        this.lastMessage = '';
         
         // Initialisation de la synthèse vocale
         if ('speechSynthesis' in window) {
@@ -28,7 +30,7 @@ class ChatbotPreview {
             <div class="chat-container">
                 <div id="chatMessages" class="chat-messages">
                     <div class="chat-placeholder">
-                        Remplissez le formulaire pour voir la prévisualisation du chatbot
+                        Remplissez tous les champs requis du formulaire pour voir la prévisualisation du chatbot
                     </div>
                 </div>
                 <div class="chat-input">
@@ -52,7 +54,8 @@ class ChatbotPreview {
         if (this.isInitialized) return;
         
         // Vérifier que tous les champs requis sont remplis
-        if (!this.config.theme || !this.config.role || !this.config.niveau) {
+        if (!this.config.theme || !this.config.role || !this.config.niveau || 
+            !this.config.contexte || !this.config.personnalite) {
             return;
         }
 
@@ -66,7 +69,6 @@ class ChatbotPreview {
             voiceButton.disabled = false;
             sendButton.disabled = false;
 
-            // Ajouter les écouteurs d'événements
             userInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -80,14 +82,15 @@ class ChatbotPreview {
 
         // Effacer le placeholder et ajouter le message d'accueil
         document.getElementById('chatMessages').innerHTML = '';
-        this.addBotMessage(this.getWelcomeMessage());
-        
         this.isInitialized = true;
+        this.messageCount = 0;
+        this.lastMessage = '';
+        this.addBotMessage(this.getWelcomeMessage());
     }
 
     getWelcomeMessage() {
-        const role = this.config.role || 'assistant';
-        const theme = this.config.theme || 'portugais';
+        const role = this.config.role;
+        const theme = this.config.theme;
         return `Olá! Eu sou seu ${role} para praticar ${theme}. Como posso ajudar você hoje?`;
     }
 
@@ -143,29 +146,41 @@ class ChatbotPreview {
 
     generateBotResponse(userMessage) {
         setTimeout(() => {
-            let response;
             const messageLC = userMessage.toLowerCase();
+            const responses = [];
 
+            // Réponses basées sur les paramètres de l'activité
             if (this.config.structures.length > 0 && Math.random() > 0.5) {
                 const structure = this.config.structures[Math.floor(Math.random() * this.config.structures.length)];
-                response = `Você pode tentar usar esta estrutura: "${structure}". Quer tentar?`;
-            } else if (this.config.vocabulaire.length > 0 && Math.random() > 0.7) {
-                const mot = this.config.vocabulaire[Math.floor(Math.random() * this.config.vocabulaire.length)];
-                response = `Você conhece a palavra "${mot}"? Pode usar em uma frase?`;
-            } else if (messageLC.includes('?')) {
-                response = 'Boa pergunta! Vamos explorar isso juntos.';
-            } else if (messageLC.includes('obrigado') || messageLC.includes('obrigada')) {
-                response = 'De nada! Estou aqui para ajudar.';
-            } else {
-                const responses = [
-                    'Me conte mais sobre isso...',
-                    'Interessante! E depois?',
-                    'Como você se sente sobre isso?',
-                    'Pode explicar melhor?',
-                    'Entendo... Quer desenvolver essa ideia?'
-                ];
-                response = responses[Math.floor(Math.random() * responses.length)];
+                responses.push(`Você pode tentar usar esta estrutura: "${structure}". Quer tentar?`);
             }
+
+            if (this.config.vocabulaire.length > 0 && Math.random() > 0.7) {
+                const mot = this.config.vocabulaire[Math.floor(Math.random() * this.config.vocabulaire.length)];
+                responses.push(`Você conhece a palavra "${mot}"? Pode usar em uma frase?`);
+            }
+
+            // Réponses contextuelles
+            if (messageLC.includes('?')) {
+                responses.push('Boa pergunta! Vamos explorar isso juntos.');
+            } else if (messageLC.includes('obrigado') || messageLC.includes('obrigada')) {
+                responses.push('De nada! Estou aqui para ajudar.');
+            }
+
+            // Réponses génériques
+            responses.push(
+                'Me conte mais sobre isso...',
+                'Interessante! E depois?',
+                'Como você se sente sobre isso?',
+                'Pode explicar melhor?',
+                'Entendo... Quer desenvolver essa ideia?'
+            );
+
+            // Sélectionner une réponse différente de la dernière
+            let response;
+            do {
+                response = responses[Math.floor(Math.random() * responses.length)];
+            } while (response === this.lastMessage && responses.length > 1);
 
             this.addBotMessage(response);
         }, 1000);
@@ -180,12 +195,20 @@ class ChatbotPreview {
     }
 
     addBotMessage(message) {
+        // Éviter les messages répétitifs consécutifs
+        if (this.messageCount > 0 && this.lastMessage === message) {
+            return;
+        }
+
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message bot-message';
         messageDiv.textContent = message;
         document.getElementById('chatMessages').appendChild(messageDiv);
         this.scrollToBottom();
         this.speakMessage(message);
+        
+        this.lastMessage = message;
+        this.messageCount++;
     }
 
     speakMessage(message) {
@@ -206,14 +229,32 @@ class ChatbotPreview {
     updateConfig(newConfig) {
         this.config = newConfig;
         
-        // Vérifier si nous devons initialiser ou réinitialiser le chat
-        if (!this.isInitialized && newConfig.theme && newConfig.role && newConfig.niveau) {
+        // Ne démarrer le chat que si tous les champs requis sont remplis
+        if (!this.isInitialized && 
+            newConfig.theme && 
+            newConfig.role && 
+            newConfig.niveau && 
+            newConfig.contexte && 
+            newConfig.personnalite) {
             this.initChat();
         } else if (this.isInitialized) {
-            // Réinitialiser le chat avec la nouvelle configuration
-            this.isInitialized = false;
-            this.messages = [];
-            this.initChat();
+            // Réinitialiser le chat seulement si la configuration a changé significativement
+            const requiresReset = ['theme', 'role', 'niveau'].some(
+                key => this.config[key] !== newConfig[key]
+            );
+            if (requiresReset) {
+                this.isInitialized = false;
+                this.messages = [];
+                this.messageCount = 0;
+                this.lastMessage = '';
+                document.getElementById('chatMessages').innerHTML = '';
+                if (newConfig.theme && newConfig.role && newConfig.niveau &&
+                    newConfig.contexte && newConfig.personnalite) {
+                    this.initChat();
+                } else {
+                    this.initInterface();
+                }
+            }
         }
     }
 }
