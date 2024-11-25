@@ -333,18 +333,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Gérer le formulaire
-    const form = document.getElementById('configForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const success = await saveToFirestore(currentConfig);
-            if (success) {
-                showSuccess("Activité sauvegardée avec succès");
-                ViewManager.showActivitiesList();
-            }
-        });
-    }
+     // Gérer le formulaire
+     const form = document.getElementById('configForm');
+     if (form) {
+         console.log("Formulaire trouvé"); // Debug
+         form.addEventListener('submit', async function(e) {
+             console.log("Soumission du formulaire"); // Debug
+             e.preventDefault();
+             const success = await saveToFirestore(currentConfig);
+             if (success) {
+                 showSuccess("Activité sauvegardée avec succès");
+                 ViewManager.showActivitiesList();
+             }
+         });
+     }
 
     // Gérer les filtres
     const filterLevel = document.getElementById('filterLevel');
