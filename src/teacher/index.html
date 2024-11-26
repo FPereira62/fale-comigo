@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interface professeur pour la création d'activités d'apprentissage du portugais">
     <title>Fale Comigo - Interface Professeur</title>
     <link href="styles.css" rel="stylesheet">
     
@@ -16,24 +17,25 @@
     <header class="header">
         <div class="header-content">
             <h1>Fale Comigo</h1>
-            <div class="header-actions">
-                <button id="newActivityBtn" class="btn-new-activity">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <nav class="header-actions">
+                <button id="newActivityBtn" class="btn-new-activity" aria-label="Créer une nouvelle activité">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                         <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    Nouvelle activité
+                    <span>Nouvelle activité</span>
                 </button>
-            </div>
+            </nav>
         </div>
     </header>
 
     <!-- Contenu principal -->
     <main class="container">
-        <!-- Liste des activités -->
-        <section class="activities-container" id="activitiesView">
+        <!-- Vue liste des activités -->
+        <section id="activitiesView" class="activities-container">
             <header class="activities-header">
                 <h2>Mes activités</h2>
                 <div class="activities-filters">
+                    <label for="filterLevel" class="filter-label">Filtrer par niveau</label>
                     <select id="filterLevel" class="filter-select">
                         <option value="">Tous les niveaux</option>
                         <option value="A1">A1 - Débutant</option>
@@ -43,14 +45,12 @@
                     </select>
                 </div>
             </header>
-            <div id="activitiesList" class="activities-list">
-                <!-- Liste des activités générée par JavaScript -->
-            </div>
+            <div id="activitiesList" class="activities-list"></div>
         </section>
 
-        <!-- Formulaire de configuration -->
+        <!-- Vue formulaire de configuration -->
         <section id="configView" class="config-container" style="display: none;">
-            <form id="configForm">
+            <form id="configForm" onsubmit="handleFormSubmit(event)">
                 <!-- Informations générales -->
                 <section class="section">
                     <h3>Informations générales</h3>
@@ -154,36 +154,13 @@
                 <!-- Contrôles -->
                 <footer class="form-footer">
                     <button type="button" class="btn-secondary" onclick="cancelConfig()">Annuler</button>
-                    <button type="submit" class="btn-primary" id="saveButton">Enregistrer</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
                 </footer>
             </form>
         </section>
     </main>
 
-    <!-- Modale de succès -->
-    <div id="successModal" class="modal" role="dialog">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2>Activité sauvegardée</h2>
-                <button class="close" onclick="closeModal('successModal')">&times;</button>
-            </header>
-            <div class="modal-body">
-                <div class="success-message">
-                    <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M22 4L12 14.01l-3-3" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <p>L'activité a été sauvegardée avec succès !</p>
-                </div>
-            </div>
-            <footer class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('successModal')">Fermer</button>
-                <button class="btn-primary" onclick="createNewActivity()">Nouvelle activité</button>
-            </footer>
-        </div>
-    </div>
-
-    <!-- Composants et Scripts -->
+    <!-- Scripts -->
     <script src="components/ChatbotPreview.js"></script>
     <script src="script.js"></script>
 </body>
