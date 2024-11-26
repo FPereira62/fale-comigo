@@ -18,12 +18,14 @@ let currentConfig = {
 // Gestionnaire de vues
 const ViewManager = {
     showActivitiesList() {
+        console.log("Affichage de la liste des activités");
         document.getElementById('activitiesView').style.display = 'block';
         document.getElementById('configView').style.display = 'none';
         loadActivities(); // Recharge la liste
     },
 
     showConfigForm() {
+        console.log("Affichage du formulaire de configuration");
         document.getElementById('activitiesView').style.display = 'none';
         document.getElementById('configView').style.display = 'block';
     }
@@ -32,6 +34,7 @@ const ViewManager = {
 // Gestion de Firebase
 async function saveToFirestore(config) {
     try {
+        console.log("Tentative de sauvegarde:", config);
         const activityData = {
             ...config,
             dateCreation: config.dateCreation || firebase.firestore.FieldValue.serverTimestamp(),
@@ -187,6 +190,7 @@ function fillFormWithActivity(activity) {
 }
 
 function resetForm() {
+    console.log("Réinitialisation du formulaire");
     currentConfig = {
         id: null,
         theme: '',
@@ -269,10 +273,7 @@ function updateFormState() {
     };
 
     currentConfig = { ...currentConfig, ...formData };
-    // Ne mettre à jour la prévisualisation que si les champs requis sont remplis
-    if (formData.theme && formData.role) {
-        updateChatbotPreview();
-    }
+    updateChatbotPreview();
 }
 
 // Utilitaires
@@ -286,16 +287,25 @@ function escapeHtml(unsafe) {
 }
 
 function showError(message) {
-    // Implémenter l'affichage des erreurs
+    console.error("Erreur:", message);
     alert(message); // Temporaire, à améliorer avec une UI plus élégante
 }
 
 function showSuccess(message) {
-    // Implémenter l'affichage des succès
+    console.log("Succès:", message);
     const modal = document.getElementById('successModal');
     if (modal) {
         modal.style.display = 'flex';
         modal.classList.add('visible');
+    }
+}
+
+function closeModal(modalId) {
+    console.log("Fermeture modale:", modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('visible');
+        setTimeout(() => modal.style.display = 'none', 300);
     }
 }
 
@@ -313,40 +323,41 @@ function cancelConfig() {
 }
 
 function createNewActivity() {
+    console.log("Création nouvelle activité");
     resetForm();
     ViewManager.showConfigForm();
+    closeModal('successModal');
 }
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM Loaded"); // Debug
+    console.log("DOM chargé");
 
-    // Gérer le bouton Nouvelle Activité
+    // Gérer le bouton Nouvelle activité
     const newActivityBtn = document.getElementById('newActivityBtn');
-    console.log("Bouton trouvé:", newActivityBtn); // Debug
-    
+    console.log("Bouton nouvelle activité:", newActivityBtn);
     if (newActivityBtn) {
         newActivityBtn.addEventListener('click', function() {
-            console.log("Bouton cliqué"); // Debug
+            console.log("Clic sur Nouvelle activité");
             resetForm();
             ViewManager.showConfigForm();
         });
     }
 
-     // Gérer le formulaire
-     const form = document.getElementById('configForm');
-     if (form) {
-         console.log("Formulaire trouvé"); // Debug
-         form.addEventListener('submit', async function(e) {
-             console.log("Soumission du formulaire"); // Debug
-             e.preventDefault();
-             const success = await saveToFirestore(currentConfig);
-             if (success) {
-                 showSuccess("Activité sauvegardée avec succès");
-                 ViewManager.showActivitiesList();
-             }
-         });
-     }
+    // Gérer le formulaire
+    const form = document.getElementById('configForm');
+    console.log("Formulaire:", form);
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            console.log("Soumission du formulaire");
+            e.preventDefault();
+            const success = await saveToFirestore(currentConfig);
+            if (success) {
+                showSuccess("Activité sauvegardée avec succès");
+                ViewManager.showActivitiesList();
+            }
+        });
+    }
 
     // Gérer les filtres
     const filterLevel = document.getElementById('filterLevel');
