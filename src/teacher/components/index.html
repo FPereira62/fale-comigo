@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interface professeur pour la création d'activités d'apprentissage du portugais">
+    <title>Fale Comigo - Interface Professeur</title>
+    <link href="styles.css" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <!-- En-tête -->
+    <header class="header" role="banner">
+        <div class="header-content">
+            <h1>Fale Comigo</h1>
+            <div class="header-actions">
+                <button id="newActivityBtn" class="btn-new-activity" aria-label="Créer une nouvelle activité">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Nouvelle activité</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="container" role="main">
+        <!-- Liste des activités -->
+        <section class="activities-container" id="activitiesView" aria-labelledby="activitiesTitle">
+            <header class="activities-header">
+                <h2 id="activitiesTitle">Mes activités</h2>
+                <div class="activities-filters">
+                    <label for="filterLevel" class="filter-label">Filtrer par niveau</label>
+                    <select id="filterLevel" class="filter-select">
+                        <option value="">Tous les niveaux</option>
+                        <option value="A1">A1 - Débutant</option>
+                        <option value="A2">A2 - Élémentaire</option>
+                        <option value="B1">B1 - Intermédiaire</option>
+                        <option value="B2">B2 - Avancé</option>
+                    </select>
+                </div>
+            </header>
+            <div id="activitiesList" class="activities-list" role="list" aria-label="Liste des activités">
+                <!-- Liste des activités générée par JavaScript -->
+            </div>
+        </section>
+
+        <!-- Formulaire de configuration -->
+        <section id="configView" class="config-container" style="display: none;" aria-labelledby="configTitle">
+            <form id="configForm" novalidate>
+                <h2 id="configTitle" class="sr-only">Configuration de l'activité</h2>
+                
+                <!-- Informations générales -->
+                <section class="section" aria-labelledby="generalInfoTitle">
+                    <h3 id="generalInfoTitle">Informations générales</h3>
+                    <div class="form-group">
+                        <label for="theme">Thème de l'activité</label>
+                        <input type="text" id="theme" name="theme" 
+                               required 
+                               aria-required="true"
+                               aria-describedby="themeHelp">
+                        <span id="themeHelp" class="help-text">Choisissez un thème pour l'activité</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="niveau">Niveau</label>
+                        <select id="niveau" name="niveau" 
+                                required 
+                                aria-required="true"
+                                aria-describedby="niveauHelp">
+                            <option value="">Sélectionnez un niveau</option>
+                            <option value="A1">A1 - Débutant</option>
+                            <option value="A2">A2 - Élémentaire</option>
+                            <option value="B1">B1 - Intermédiaire</option>
+                            <option value="B2">B2 - Avancé</option>
+                        </select>
+                        <span id="niveauHelp" class="help-text">Sélectionnez le niveau approprié pour l'activité</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contexte">Contexte</label>
+                        <textarea id="contexte" name="contexte" 
+                                 required 
+                                 aria-required="true"
+                                 aria-describedby="contexteHelp"></textarea>
+                        <span id="contexteHelp" class="help-text">Décrivez le contexte de l'activité</span>
+                    </div>
+                </section>
+
+                <!-- Configuration du Chatbot -->
+                <section class="section" aria-labelledby="chatbotConfigTitle">
+                    <h3 id="chatbotConfigTitle">Configuration du Chatbot</h3>
+                    <div class="form-group">
+                        <label for="role">Rôle du chatbot</label>
+                        <input type="text" id="role" name="role" 
+                               required 
+                               aria-required="true"
+                               placeholder="Ex: guide touristique, vendeur, ami..."
+                               aria-describedby="roleHelp">
+                        <span id="roleHelp" class="help-text">Définissez le rôle que le chatbot va jouer</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="personnalite">Personnalité du chatbot</label>
+                        <input type="text" id="personnalite" name="personnalite" 
+                               required 
+                               aria-required="true"
+                               placeholder="Ex: amical, professionnel, décontracté..."
+                               aria-describedby="personnaliteHelp">
+                        <span id="personnaliteHelp" class="help-text">Définissez la personnalité du chatbot</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newObjectif">Objectifs pédagogiques</label>
+                        <div id="objectifs" class="chips-container" role="list" aria-label="Liste des objectifs"></div>
+                        <div class="add-item">
+                            <input type="text" id="newObjectif" 
+                                   placeholder="Ajouter un objectif"
+                                   aria-describedby="objectifsHelp">
+                            <button type="button" onclick="addChip('objectifs', 'newObjectif')" aria-label="Ajouter l'objectif">
+                                <span aria-hidden="true">+</span>
+                            </button>
+                        </div>
+                        <span id="objectifsHelp" class="help-text">Ajoutez un ou plusieurs objectifs pédagogiques</span>
+                    </div>
+                </section>
+
+                <!-- Paramètres linguistiques -->
+                <!-- ... sections suivantes avec mêmes modifications ... -->
+
+                <!-- Contrôles du formulaire -->
+                <footer class="form-footer">
+                    <button type="button" class="btn-secondary" onclick="cancelConfig()" aria-label="Annuler les modifications">Annuler</button>
+                    <button type="submit" class="btn-primary" id="saveButton" aria-label="Enregistrer l'activité">Enregistrer</button>
+                </footer>
+            </form>
+        </section>
+    </main>
+
+    <!-- Modales -->
+    <div id="successModal" class="modal" role="dialog" aria-labelledby="successTitle" aria-modal="true" hidden>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="successTitle">Activité sauvegardée</h2>
+                <button class="close" onclick="closeModal('successModal')" aria-label="Fermer la fenêtre">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </header>
+            <div class="modal-body">
+                <div class="success-message" role="status">
+                    <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 4L12 14.01l-3-3" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p>L'activité a été sauvegardée avec succès !</p>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('successModal')">Fermer</button>
+                <button class="btn-primary" onclick="createNewActivity()">Nouvelle activité</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Composants et Scripts -->
+    <script src="components/ChatbotPreview.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
