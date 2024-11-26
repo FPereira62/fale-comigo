@@ -29,6 +29,7 @@
 
     <!-- Contenu principal -->
     <main class="container">
+        <!-- Liste des activités -->
         <section class="activities-container" id="activitiesView">
             <header class="activities-header">
                 <h2>Mes activités</h2>
@@ -153,7 +154,7 @@
                 <!-- Contrôles -->
                 <footer class="form-footer">
                     <button type="button" class="btn-secondary" onclick="cancelConfig()">Annuler</button>
-                    <button type="submit" class="btn-primary">Enregistrer</button>
+                    <button type="submit" class="btn-primary" id="saveButton">Enregistrer</button>
                 </footer>
             </form>
         </section>
@@ -175,9 +176,9 @@
                     <p>L'activité a été sauvegardée avec succès !</p>
                 </div>
             </div>
-            <footer class="form-footer">
-                <button type="button" class="btn-secondary" onclick="cancelConfig()">Annuler</button>
-                <button type="submit" class="btn-primary">Enregistrer</button>
+            <footer class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('successModal')">Fermer</button>
+                <button class="btn-primary" onclick="createNewActivity()">Nouvelle activité</button>
             </footer>
         </div>
     </div>
