@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interface professeur pour la création d'activités d'apprentissage du portugais">
-    <title>Fale Comigo - Interface Professeur</title>
-    <link href="styles.css" rel="stylesheet">
-    
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="firebase-config.js"></script>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Interface professeur pour la création d'activités d'apprentissage du portugais">
+        <title>Fale Comigo - Interface Professeur</title>
+        <link href="styles.css" rel="stylesheet">
+        
+        <!-- Firebase -->
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js" defer></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js" defer></script>
+        <script src="firebase-config.js" defer></script>
+        <script src="components/ChatbotPreview.js" defer></script>
+        <script src="script.js" defer></script>
+    </head>
 <body>
     <!-- En-tête -->
     <header class="header">
@@ -34,9 +37,9 @@
         <section id="activitiesView" class="activities-container">
             <header class="activities-header">
                 <h2>Mes activités</h2>
-                <div class="activities-filters">
+                <div class="activities-filters" role="search">
                     <label for="filterLevel" class="filter-label">Filtrer par niveau</label>
-                    <select id="filterLevel" class="filter-select">
+                    <select id="filterLevel" class="filter-select" aria-label="Sélectionner le niveau">
                         <option value="">Tous les niveaux</option>
                         <option value="A1">A1 - Débutant</option>
                         <option value="A2">A2 - Élémentaire</option>
