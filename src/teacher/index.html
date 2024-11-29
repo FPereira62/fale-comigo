@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fale Comigo - Interface Enseignant</title>
     <link rel="stylesheet" href="./styles.css">
+    
+    <!-- Firebase App (la base) est toujours nécessaire et doit être en premier -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
+
+    <!-- Vos scripts -->
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
 </head>
 <body>
     <header class="header" role="banner">
@@ -81,9 +89,5 @@
             </form>
         </section>
     </main>
-
-    <!-- Scripts modules -->
-    <script type="module" src="./firebase-config.js"></script>
-    <script type="module" src="./script.js"></script>
 </body>
 </html>

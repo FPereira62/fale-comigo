@@ -1,6 +1,4 @@
-import { loadActivities, addActivity, updateActivity, deleteActivity } from './firebase-config.js';
-
-// État global de l'application
+// État global
 let currentActivityId = null;
 
 // Gestionnaire de vues
@@ -11,12 +9,12 @@ const ViewManager = {
     },
 
     showView(viewId) {
-        for (const view of Object.values(this.views)) {
+        Object.values(this.views).forEach(view => {
             const element = document.getElementById(view);
             if (element) {
                 element.style.display = view === viewId ? 'block' : 'none';
             }
-        }
+        });
     },
 
     showActivitiesList() {
@@ -30,13 +28,13 @@ const ViewManager = {
 };
 
 // Fonctions d'affichage
-async function loadAndDisplayActivities(filterLevel = 'all') {
-    try {
-        const activities = await loadActivities(filterLevel);
-        displayActivities(activities);
-    } catch (error) {
-        showError('Erreur lors du chargement des activités');
-    }
+function loadAndDisplayActivities(filterLevel = 'all') {
+    loadActivities(filterLevel)
+        .then(displayActivities)
+        .catch(error => {
+            console.error('Erreur:', error);
+            showError('Erreur lors du chargement des activités');
+        });
 }
 
 function displayActivities(activities) {
@@ -82,7 +80,7 @@ function createActivityCard(activity) {
 
 // Gestionnaires d'événements
 function initializeEventListeners() {
-    // Gestionnaire pour le bouton Nouvelle activité
+    // Bouton Nouvelle activité
     const newActivityBtn = document.getElementById('newActivityBtn');
     if (newActivityBtn) {
         newActivityBtn.addEventListener('click', () => {
@@ -92,7 +90,7 @@ function initializeEventListeners() {
         });
     }
 
-    // Gestionnaire pour le filtre de niveau
+    // Filtre de niveau
     const levelFilter = document.getElementById('levelFilter');
     if (levelFilter) {
         levelFilter.addEventListener('change', (e) => {
@@ -100,13 +98,13 @@ function initializeEventListeners() {
         });
     }
 
-    // Gestionnaire pour le formulaire
+    // Formulaire de configuration
     const configForm = document.getElementById('configForm');
     if (configForm) {
         configForm.addEventListener('submit', handleFormSubmit);
     }
 
-    // Gestionnaire pour le bouton Annuler
+    // Bouton Annuler
     const cancelBtn = document.getElementById('cancelBtn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
@@ -134,6 +132,7 @@ async function handleFormSubmit(event) {
         }
         ViewManager.showActivitiesList();
     } catch (error) {
+        console.error('Erreur:', error);
         showError('Erreur lors de la sauvegarde de l\'activité');
     }
 }
@@ -159,25 +158,37 @@ function showError(message) {
     alert(message); // À améliorer avec un système de notification plus élégant
 }
 
-async function confirmDelete(activityId) {
+// Fonctions globales pour les gestionnaires d'événements inline
+window.editActivity = async function(activityId) {
+    try {
+        currentActivityId = activityId;
+        const doc = await db.collection('activities').doc(activityId).get();
+        if (doc.exists) {
+            const activity = doc.data();
+            document.getElementById('theme').value = activity.theme || '';
+            document.getElementById('niveau').value = activity.niveau || '';
+            document.getElementById('contexte').value = activity.contexte || '';
+            document.getElementById('role').value = activity.role || '';
+            document.getElementById('personnalite').value = activity.personnalite || '';
+            ViewManager.showConfigForm();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showError('Erreur lors du chargement de l\'activité');
+    }
+};
+
+window.confirmDelete = async function(activityId) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) {
         try {
             await deleteActivity(activityId);
             loadAndDisplayActivities();
         } catch (error) {
+            console.error('Erreur:', error);
             showError('Erreur lors de la suppression de l\'activité');
         }
     }
-}
-
-// Exposition des fonctions nécessaires au niveau global pour les gestionnaires d'événements inline
-window.editActivity = async function(activityId) {
-    currentActivityId = activityId;
-    // Logique pour charger et afficher l'activité dans le formulaire
-    ViewManager.showConfigForm();
 };
-
-window.confirmDelete = confirmDelete;
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {

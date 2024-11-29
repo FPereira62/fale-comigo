@@ -1,17 +1,3 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js';
-import { 
-    getFirestore, 
-    collection, 
-    getDocs, 
-    addDoc, 
-    deleteDoc,
-    doc,
-    updateDoc,
-    query,
-    where,
-    orderBy
-} from 'https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js';
-
 // Configuration Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBVAVVcpmicOnyXYBydEW4KfCuBBukNe4",
@@ -24,68 +10,52 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // Fonction pour charger les activités
-export async function loadActivities(filterLevel = null) {
-    try {
-        const activitiesRef = collection(db, 'activities');
-        let q = activitiesRef;
-
-        if (filterLevel && filterLevel !== 'all') {
-            q = query(activitiesRef, where('niveau', '==', filterLevel));
-        }
-
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
+function loadActivities(filterLevel = null) {
+    let query = db.collection('activities');
+    
+    if (filterLevel && filterLevel !== 'all') {
+        query = query.where('niveau', '==', filterLevel);
+    }
+    
+    return query.get().then(snapshot => {
+        return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
-    } catch (error) {
+    }).catch(error => {
         console.error('Erreur lors du chargement des activités:', error);
         throw error;
-    }
+    });
 }
 
 // Fonction pour ajouter une activité
-export async function addActivity(activityData) {
-    try {
-        const activitiesRef = collection(db, 'activities');
-        const docRef = await addDoc(activitiesRef, {
-            ...activityData,
-            createdAt: new Date().toISOString()
-        });
-        return docRef.id;
-    } catch (error) {
-        console.error('Erreur lors de l\'ajout de l\'activité:', error);
-        throw error;
-    }
+function addActivity(activityData) {
+    return db.collection('activities').add({
+        ...activityData,
+        createdAt: new Date().toISOString()
+    });
 }
 
 // Fonction pour mettre à jour une activité
-export async function updateActivity(activityId, activityData) {
-    try {
-        const activityRef = doc(db, 'activities', activityId);
-        await updateDoc(activityRef, {
-            ...activityData,
-            updatedAt: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'activité:', error);
-        throw error;
-    }
+function updateActivity(activityId, activityData) {
+    return db.collection('activities').doc(activityId).update({
+        ...activityData,
+        updatedAt: new Date().toISOString()
+    });
 }
 
 // Fonction pour supprimer une activité
-export async function deleteActivity(activityId) {
-    try {
-        const activityRef = doc(db, 'activities', activityId);
-        await deleteDoc(activityRef);
-    } catch (error) {
-        console.error('Erreur lors de la suppression de l\'activité:', error);
-        throw error;
-    }
+function deleteActivity(activityId) {
+    return db.collection('activities').doc(activityId).delete();
 }
 
-export { db };
+// Export des fonctions pour les rendre disponibles globalement
+window.db = db;
+window.loadActivities = loadActivities;
+window.addActivity = addActivity;
+window.updateActivity = updateActivity;
+window.deleteActivity = deleteActivity;
