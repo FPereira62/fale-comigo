@@ -1,5 +1,5 @@
 // Configuration Firebase
-const firebaseConfig = {
+var firebaseConfig = {
     apiKey: "AIzaSyBVAVVcpmicOnyXYBydEW4KfCuBBukNe4",
     authDomain: "fale-comigo-d4522.firebaseapp.com",
     projectId: "fale-comigo-d4522",
@@ -11,51 +11,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+var db = firebase.firestore();
 
-// Fonction pour charger les activités
-function loadActivities(filterLevel = null) {
-    let query = db.collection('activities');
-    
-    if (filterLevel && filterLevel !== 'all') {
-        query = query.where('niveau', '==', filterLevel);
-    }
-    
-    return query.get().then(snapshot => {
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-    }).catch(error => {
-        console.error('Erreur lors du chargement des activités:', error);
-        throw error;
-    });
-}
-
-// Fonction pour ajouter une activité
-function addActivity(activityData) {
-    return db.collection('activities').add({
-        ...activityData,
-        createdAt: new Date().toISOString()
-    });
-}
-
-// Fonction pour mettre à jour une activité
-function updateActivity(activityId, activityData) {
-    return db.collection('activities').doc(activityId).update({
-        ...activityData,
-        updatedAt: new Date().toISOString()
-    });
-}
-
-// Fonction pour supprimer une activité
-function deleteActivity(activityId) {
-    return db.collection('activities').doc(activityId).delete();
-}
-
-// Export des fonctions pour les rendre disponibles globalement
+// On rend la base de données accessible globalement
 window.db = db;
-window.loadActivities = loadActivities;
-window.addActivity = addActivity;
-window.updateActivity = updateActivity;
-window.deleteActivity = deleteActivity;

@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fale Comigo - Interface Enseignant</title>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="styles.css">
     
     <!-- Firebase App (la base) est toujours nécessaire et doit être en premier -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
     <!-- Vos scripts -->
-    <script src="./firebase-config.js"></script>
-    <script src="./script.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
 </head>
 <body>
     <header class="header" role="banner">
@@ -26,10 +26,10 @@
     </header>
 
     <main class="container" role="main">
-        <section id="activitiesView" class="section activities-container" role="region" aria-labelledby="activitiesTitle">
+        <section id="activitiesView" class="section activities-container">
             <div class="activities-header">
-                <h2 id="activitiesTitle">Mes activités</h2>
-                <div class="activities-filters" role="search">
+                <h2>Mes activités</h2>
+                <div class="activities-filters">
                     <label for="levelFilter" class="filter-label">Filtrer par niveau</label>
                     <select id="levelFilter" class="filter-select">
                         <option value="all">Tous les niveaux</option>
@@ -40,23 +40,21 @@
                     </select>
                 </div>
             </div>
-            <div id="activitiesList" class="activities-list" role="list">
-                <!-- Les activités seront injectées ici dynamiquement -->
-            </div>
+            <div id="activitiesList" class="activities-list"></div>
         </section>
 
-        <section id="configView" class="section config-container" style="display: none;" role="region" aria-labelledby="configTitle">
-            <h2 id="configTitle">Configuration de l'activité</h2>
-            <form id="configForm" class="form">
+        <section id="configView" class="section config-container" style="display: none;">
+            <h2>Configuration de l'activité</h2>
+            <form id="configForm">
                 <div class="section">
                     <h3>Informations générales</h3>
                     <div class="form-group">
                         <label for="theme">Thème de l'activité</label>
-                        <input type="text" id="theme" name="theme" required>
+                        <input type="text" id="theme" required>
                     </div>
                     <div class="form-group">
                         <label for="niveau">Niveau</label>
-                        <select id="niveau" name="niveau" required>
+                        <select id="niveau" required>
                             <option value="">Sélectionnez un niveau</option>
                             <option value="A1">A1 - Débutant</option>
                             <option value="A2">A2 - Élémentaire</option>
@@ -66,7 +64,7 @@
                     </div>
                     <div class="form-group">
                         <label for="contexte">Contexte</label>
-                        <textarea id="contexte" name="contexte" rows="4" required></textarea>
+                        <textarea id="contexte" required></textarea>
                     </div>
                 </div>
 
@@ -74,16 +72,16 @@
                     <h3>Configuration du Chatbot</h3>
                     <div class="form-group">
                         <label for="role">Rôle du chatbot</label>
-                        <input type="text" id="role" name="role" required>
+                        <input type="text" id="role" required>
                     </div>
                     <div class="form-group">
                         <label for="personnalite">Personnalité du chatbot</label>
-                        <textarea id="personnalite" name="personnalite" rows="4" required></textarea>
+                        <textarea id="personnalite" required></textarea>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary" id="cancelBtn">Annuler</button>
+                    <button type="button" id="cancelBtn" class="btn-secondary">Annuler</button>
                     <button type="submit" class="btn-primary">Enregistrer</button>
                 </div>
             </form>

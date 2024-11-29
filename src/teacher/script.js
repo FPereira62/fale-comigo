@@ -1,64 +1,50 @@
-// État global
-let currentActivityId = null;
+// État de l'application
+var currentActivityId = null;
 
-// Gestionnaire de vues
-const ViewManager = {
-    views: {
-        activities: 'activitiesView',
-        config: 'configView'
-    },
-
-    showView(viewId) {
-        Object.values(this.views).forEach(view => {
-            const element = document.getElementById(view);
-            if (element) {
-                element.style.display = view === viewId ? 'block' : 'none';
-            }
-        });
-    },
-
-    showActivitiesList() {
-        this.showView(this.views.activities);
-        loadAndDisplayActivities();
-    },
-
-    showConfigForm() {
-        this.showView(this.views.config);
+// Fonctions de gestion des activités
+function loadActivities(filterLevel) {
+    var query = db.collection('activities');
+    
+    if (filterLevel && filterLevel !== 'all') {
+        query = query.where('niveau', '==', filterLevel);
     }
-};
-
-// Fonctions d'affichage
-function loadAndDisplayActivities(filterLevel = 'all') {
-    loadActivities(filterLevel)
-        .then(displayActivities)
-        .catch(error => {
-            console.error('Erreur:', error);
-            showError('Erreur lors du chargement des activités');
+    
+    query.get().then(function(snapshot) {
+        var activities = [];
+        snapshot.forEach(function(doc) {
+            activities.push({
+                id: doc.id,
+                ...doc.data()
+            });
         });
+        displayActivities(activities);
+    }).catch(function(error) {
+        console.error("Erreur lors du chargement des activités:", error);
+        showError("Erreur lors du chargement des activités");
+    });
 }
 
 function displayActivities(activities) {
-    const activitiesList = document.getElementById('activitiesList');
-    if (!activitiesList) return;
-
-    activitiesList.innerHTML = '';
+    var container = document.getElementById('activitiesList');
+    if (!container) return;
+    
+    container.innerHTML = '';
     
     if (activities.length === 0) {
-        activitiesList.innerHTML = '<p class="no-activities">Aucune activité trouvée</p>';
+        container.innerHTML = '<p class="no-activities">Aucune activité trouvée</p>';
         return;
     }
-
-    activities.forEach(activity => {
-        const card = createActivityCard(activity);
-        activitiesList.appendChild(card);
+    
+    activities.forEach(function(activity) {
+        var card = createActivityCard(activity);
+        container.appendChild(card);
     });
 }
 
 function createActivityCard(activity) {
-    const article = document.createElement('article');
+    var article = document.createElement('article');
     article.className = 'activity-card';
-    article.setAttribute('role', 'listitem');
-
+    
     article.innerHTML = `
         <div class="activity-header">
             <h3>${escapeHtml(activity.theme)}</h3>
@@ -74,70 +60,105 @@ function createActivityCard(activity) {
             </div>
         </div>
     `;
-
+    
     return article;
 }
 
-// Gestionnaires d'événements
-function initializeEventListeners() {
-    // Bouton Nouvelle activité
-    const newActivityBtn = document.getElementById('newActivityBtn');
-    if (newActivityBtn) {
-        newActivityBtn.addEventListener('click', () => {
-            currentActivityId = null;
-            resetForm();
-            ViewManager.showConfigForm();
-        });
-    }
-
-    // Filtre de niveau
-    const levelFilter = document.getElementById('levelFilter');
-    if (levelFilter) {
-        levelFilter.addEventListener('change', (e) => {
-            loadAndDisplayActivities(e.target.value);
-        });
-    }
-
-    // Formulaire de configuration
-    const configForm = document.getElementById('configForm');
-    if (configForm) {
-        configForm.addEventListener('submit', handleFormSubmit);
-    }
-
-    // Bouton Annuler
-    const cancelBtn = document.getElementById('cancelBtn');
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-            ViewManager.showActivitiesList();
-        });
-    }
+// Gestion du formulaire
+function showForm() {
+    document.getElementById('activitiesView').style.display = 'none';
+    document.getElementById('configView').style.display = 'block';
 }
 
-async function handleFormSubmit(event) {
-    event.preventDefault();
+function showActivities() {
+    document.getElementById('configView').style.display = 'none';
+    document.getElementById('activitiesView').style.display = 'block';
+    loadActivities();
+}
 
-    const formData = {
+function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    var activityData = {
         theme: document.getElementById('theme').value,
         niveau: document.getElementById('niveau').value,
         contexte: document.getElementById('contexte').value,
         role: document.getElementById('role').value,
-        personnalite: document.getElementById('personnalite').value
+        personnalite: document.getElementById('personnalite').value,
     };
-
-    try {
-        if (currentActivityId) {
-            await updateActivity(currentActivityId, formData);
-        } else {
-            await addActivity(formData);
-        }
-        ViewManager.showActivitiesList();
-    } catch (error) {
-        console.error('Erreur:', error);
-        showError('Erreur lors de la sauvegarde de l\'activité');
+    
+    if (currentActivityId) {
+        updateActivity(currentActivityId, activityData);
+    } else {
+        createActivity(activityData);
     }
 }
 
-// Fonctions utilitaires
+function createActivity(data) {
+    db.collection('activities').add({
+        ...data,
+        createdAt: new Date().toISOString()
+    }).then(function() {
+        showActivities();
+    }).catch(function(error) {
+        showError("Erreur lors de la création de l'activité");
+        console.error("Erreur:", error);
+    });
+}
+
+function updateActivity(id, data) {
+    db.collection('activities').doc(id).update({
+        ...data,
+        updatedAt: new Date().toISOString()
+    }).then(function() {
+        showActivities();
+    }).catch(function(error) {
+        showError("Erreur lors de la mise à jour de l'activité");
+        console.error("Erreur:", error);
+    });
+}
+
+function confirmDelete(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) {
+        deleteActivity(id);
+    }
+}
+
+function deleteActivity(id) {
+    db.collection('activities').doc(id).delete()
+        .then(function() {
+            loadActivities();
+        }).catch(function(error) {
+            showError("Erreur lors de la suppression de l'activité");
+            console.error("Erreur:", error);
+        });
+}
+
+function editActivity(id) {
+    currentActivityId = id;
+    
+    db.collection('activities').doc(id).get()
+        .then(function(doc) {
+            if (doc.exists) {
+                var data = doc.data();
+                document.getElementById('theme').value = data.theme || '';
+                document.getElementById('niveau').value = data.niveau || '';
+                document.getElementById('contexte').value = data.contexte || '';
+                document.getElementById('role').value = data.role || '';
+                document.getElementById('personnalite').value = data.personnalite || '';
+                showForm();
+            }
+        }).catch(function(error) {
+            showError("Erreur lors du chargement de l'activité");
+            console.error("Erreur:", error);
+        });
+}
+
+// Utilitaires
+function showError(message) {
+    alert(message);
+}
+
 function escapeHtml(unsafe) {
     return unsafe
         .replace(/&/g, "&amp;")
@@ -147,51 +168,23 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-function resetForm() {
-    const form = document.getElementById('configForm');
-    if (form) {
-        form.reset();
-    }
-}
-
-function showError(message) {
-    alert(message); // À améliorer avec un système de notification plus élégant
-}
-
-// Fonctions globales pour les gestionnaires d'événements inline
-window.editActivity = async function(activityId) {
-    try {
-        currentActivityId = activityId;
-        const doc = await db.collection('activities').doc(activityId).get();
-        if (doc.exists) {
-            const activity = doc.data();
-            document.getElementById('theme').value = activity.theme || '';
-            document.getElementById('niveau').value = activity.niveau || '';
-            document.getElementById('contexte').value = activity.contexte || '';
-            document.getElementById('role').value = activity.role || '';
-            document.getElementById('personnalite').value = activity.personnalite || '';
-            ViewManager.showConfigForm();
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        showError('Erreur lors du chargement de l\'activité');
-    }
-};
-
-window.confirmDelete = async function(activityId) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) {
-        try {
-            await deleteActivity(activityId);
-            loadAndDisplayActivities();
-        } catch (error) {
-            console.error('Erreur:', error);
-            showError('Erreur lors de la suppression de l\'activité');
-        }
-    }
-};
-
 // Initialisation
-document.addEventListener('DOMContentLoaded', () => {
-    initializeEventListeners();
-    ViewManager.showActivitiesList();
+document.addEventListener('DOMContentLoaded', function() {
+    // Écouteurs d'événements
+    document.getElementById('newActivityBtn').addEventListener('click', function() {
+        currentActivityId = null;
+        document.getElementById('configForm').reset();
+        showForm();
+    });
+    
+    document.getElementById('configForm').addEventListener('submit', handleFormSubmit);
+    
+    document.getElementById('cancelBtn').addEventListener('click', showActivities);
+    
+    document.getElementById('levelFilter').addEventListener('change', function(e) {
+        loadActivities(e.target.value);
+    });
+    
+    // Chargement initial
+    showActivities();
 });
