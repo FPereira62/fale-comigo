@@ -2,77 +2,59 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interface professeur pour la création d'activités d'apprentissage du portugais">
-    <title>Fale Comigo - Interface Professeur</title>
-    
-    <!-- Styles -->
-    <link rel="stylesheet" type="text/css" href="./styles.css">
-    
+    <title>Fale Comigo - Interface Enseignant</title>
+    <!-- Correction du chemin vers le CSS -->
+    <link rel="stylesheet" href="./styles.css">
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js" defer></script>
-    <script src="./firebase-config.js" defer></script>
-    <script src="./components/ChatbotPreview.js" defer></script>
-    <script src="./script.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.5.0/firebase-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.5.0/firebase-firestore.js"></script>
+    <!-- Scripts de l'application -->
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
 </head>
 <body>
-    <!-- En-tête -->
     <header class="header" role="banner">
         <div class="header-content">
             <h1>Fale Comigo</h1>
-            <nav class="header-actions">
-                <button id="newActivityBtn" class="btn-new-activity" aria-label="Créer une nouvelle activité">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <span>Nouvelle activité</span>
-                </button>
-            </nav>
+            <button id="newActivityBtn" class="btn-new-activity">
+                <span class="icon">+</span>
+                Nouvelle activité
+            </button>
         </div>
     </header>
 
-    <!-- Contenu principal -->
     <main class="container" role="main">
-        <!-- Liste des activités -->
-        <section id="activitiesView" class="activities-container" role="region" aria-labelledby="activitiesTitle">
-            <header class="activities-header">
+        <section id="activitiesView" class="section activities-container" role="region" aria-labelledby="activitiesTitle">
+            <div class="activities-header">
                 <h2 id="activitiesTitle">Mes activités</h2>
                 <div class="activities-filters" role="search">
-                    <label for="filterLevel" class="filter-label">Filtrer par niveau</label>
-                    <select id="filterLevel" class="filter-select" aria-label="Sélectionner le niveau de difficulté">
-                        <option value="">Tous les niveaux</option>
+                    <label for="levelFilter" class="filter-label">Filtrer par niveau</label>
+                    <select id="levelFilter" class="filter-select">
+                        <option value="all">Tous les niveaux</option>
                         <option value="A1">A1 - Débutant</option>
                         <option value="A2">A2 - Élémentaire</option>
                         <option value="B1">B1 - Intermédiaire</option>
                         <option value="B2">B2 - Avancé</option>
                     </select>
                 </div>
-            </header>
-            <div id="activitiesList" class="activities-list" role="list">
-                <!-- Liste des activités générée par JavaScript -->
             </div>
+            <div id="activitiesList" class="activities-list" role="list"></div>
         </section>
 
-        <!-- Formulaire de configuration -->
-        <section id="configView" class="config-container" style="display: none;" role="region" aria-labelledby="configTitle">
-            <form id="configForm" novalidate>
-                <h2 id="configTitle" class="sr-only">Configuration de l'activité</h2>
-
+        <section id="configView" class="section config-container" style="display: none;" role="region" aria-labelledby="configTitle">
+            <h2 id="configTitle" class="sr-only">Configuration de l'activité</h2>
+            <form id="configForm">
                 <!-- Informations générales -->
                 <section class="section">
                     <h3>Informations générales</h3>
                     <div class="form-group">
-                        <label for="theme" class="form-label">Thème de l'activité</label>
-                        <input type="text" id="theme" name="theme" required
-                               aria-required="true">
+                        <label for="theme">Thème de l'activité</label>
+                        <input type="text" id="theme" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="niveau" class="form-label">Niveau</label>
-                        <select id="niveau" name="niveau" required
-                                aria-required="true">
+                        <label for="niveau">Niveau</label>
+                        <select id="niveau" required>
                             <option value="">Sélectionnez un niveau</option>
                             <option value="A1">A1 - Débutant</option>
                             <option value="A2">A2 - Élémentaire</option>
@@ -80,11 +62,9 @@
                             <option value="B2">B2 - Avancé</option>
                         </select>
                     </div>
-
                     <div class="form-group">
-                        <label for="contexte" class="form-label">Contexte</label>
-                        <textarea id="contexte" name="contexte" required
-                                  aria-required="true"></textarea>
+                        <label for="contexte">Contexte</label>
+                        <textarea id="contexte" required></textarea>
                     </div>
                 </section>
 
@@ -92,41 +72,19 @@
                 <section class="section">
                     <h3>Configuration du Chatbot</h3>
                     <div class="form-group">
-                        <label for="role" class="form-label">Rôle du chatbot</label>
-                        <input type="text" id="role" name="role" required
-                               aria-required="true"
-                               placeholder="Ex: guide touristique, vendeur, ami...">
+                        <label for="role">Rôle du chatbot</label>
+                        <input type="text" id="role" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="personnalite" class="form-label">Personnalité du chatbot</label>
-                        <input type="text" id="personnalite" name="personnalite" required
-                               aria-required="true"
-                               placeholder="Ex: amical, professionnel, décontracté...">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="newObjectif" class="form-label">Objectifs pédagogiques</label>
-                        <div id="objectifs" class="chips-container" role="list" aria-label="Liste des objectifs"></div>
-                        <div class="add-item">
-                            <input type="text" id="newObjectif" 
-                                   placeholder="Ajouter un objectif"
-                                   aria-label="Ajouter un nouvel objectif">
-                            <button type="button" onclick="addChip('objectifs', 'newObjectif')"
-                                    aria-label="Ajouter l'objectif">
-                                <span aria-hidden="true">+</span>
-                            </button>
-                        </div>
+                        <label for="personnalite">Personnalité du chatbot</label>
+                        <textarea id="personnalite" required></textarea>
                     </div>
                 </section>
 
-                <!-- ... Reste du HTML ... -->
-
-                <!-- Contrôles -->
-                <footer class="form-footer">
-                    <button type="button" class="btn-secondary" onclick="cancelConfig()">Annuler</button>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="ViewManager.showActivitiesList()">Annuler</button>
                     <button type="submit" class="btn-primary">Enregistrer</button>
-                </footer>
+                </div>
             </form>
         </section>
     </main>
