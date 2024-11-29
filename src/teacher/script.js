@@ -1,3 +1,8 @@
+import { loadActivities, addActivity, updateActivity, deleteActivity } from './firebase-config.js';
+
+// État global de l'application
+let currentActivityId = null;
+
 // Gestionnaire de vues
 const ViewManager = {
     views: {
@@ -5,22 +10,18 @@ const ViewManager = {
         config: 'configView'
     },
 
-    hideAllViews() {
-        Object.values(this.views).forEach(viewId => {
-            const view = document.getElementById(viewId);
-            if (view) view.style.display = 'none';
-        });
-    },
-
     showView(viewId) {
-        this.hideAllViews();
-        const view = document.getElementById(viewId);
-        if (view) view.style.display = 'block';
+        for (const view of Object.values(this.views)) {
+            const element = document.getElementById(view);
+            if (element) {
+                element.style.display = view === viewId ? 'block' : 'none';
+            }
+        }
     },
 
     showActivitiesList() {
         this.showView(this.views.activities);
-        loadActivities();
+        loadAndDisplayActivities();
     },
 
     showConfigForm() {
@@ -28,227 +29,158 @@ const ViewManager = {
     }
 };
 
-// État de l'application
-let currentConfig = {
-    theme: '',
-    niveau: '',
-    contexte: '',
-    role: '',
-    personnalite: '',
-    objectifs: [],
-    structures: [],
-    vocabulaire: [],
-    correction_style: 'immediate',
-    aide_niveau: 'minimal'
-};
+// Fonctions d'affichage
+async function loadAndDisplayActivities(filterLevel = 'all') {
+    try {
+        const activities = await loadActivities(filterLevel);
+        displayActivities(activities);
+    } catch (error) {
+        showError('Erreur lors du chargement des activités');
+    }
+}
 
-// Initialisation de l'application
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Initialisation de l'application...");
+function displayActivities(activities) {
+    const activitiesList = document.getElementById('activitiesList');
+    if (!activitiesList) return;
+
+    activitiesList.innerHTML = '';
     
+    if (activities.length === 0) {
+        activitiesList.innerHTML = '<p class="no-activities">Aucune activité trouvée</p>';
+        return;
+    }
+
+    activities.forEach(activity => {
+        const card = createActivityCard(activity);
+        activitiesList.appendChild(card);
+    });
+}
+
+function createActivityCard(activity) {
+    const article = document.createElement('article');
+    article.className = 'activity-card';
+    article.setAttribute('role', 'listitem');
+
+    article.innerHTML = `
+        <div class="activity-header">
+            <h3>${escapeHtml(activity.theme)}</h3>
+            <span class="badge-niveau">${escapeHtml(activity.niveau)}</span>
+        </div>
+        <div class="activity-content">
+            <p>${escapeHtml(activity.contexte)}</p>
+        </div>
+        <div class="activity-footer">
+            <div class="actions">
+                <button class="btn-edit" onclick="editActivity('${activity.id}')">Modifier</button>
+                <button class="btn-delete" onclick="confirmDelete('${activity.id}')">Supprimer</button>
+            </div>
+        </div>
+    `;
+
+    return article;
+}
+
+// Gestionnaires d'événements
+function initializeEventListeners() {
     // Gestionnaire pour le bouton Nouvelle activité
     const newActivityBtn = document.getElementById('newActivityBtn');
     if (newActivityBtn) {
-        newActivityBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log("Création d'une nouvelle activité");
-            createNewActivity();
+        newActivityBtn.addEventListener('click', () => {
+            currentActivityId = null;
+            resetForm();
+            ViewManager.showConfigForm();
         });
     }
-
-    // Gestionnaire pour le formulaire de configuration
-    const configForm = document.getElementById('configForm');
-    if (configForm) {
-        configForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log("Soumission du formulaire");
-            if (validateForm()) {
-                await saveActivity();
-            }
-        });
-
-        // Ajout des écouteurs d'événements pour la mise à jour en temps réel
-        configForm.querySelectorAll('input, select, textarea').forEach(element => {
-            element.addEventListener('change', updateFormState);
-            element.addEventListener('input', updateFormState);
-        });
-    }
-
-    // Chargement initial des activités
-    loadActivities();
 
     // Gestionnaire pour le filtre de niveau
     const levelFilter = document.getElementById('levelFilter');
     if (levelFilter) {
-        levelFilter.addEventListener('change', function() {
-            loadActivities(this.value);
+        levelFilter.addEventListener('change', (e) => {
+            loadAndDisplayActivities(e.target.value);
         });
     }
-});
 
-// Fonctions de gestion des activités
-async function loadActivities(filterLevel = 'all') {
-    console.log("Chargement des activités...");
-    try {
-        const activitiesRef = window.db.collection('activities');
-        let query = activitiesRef;
-        
-        if (filterLevel !== 'all') {
-            query = query.where('niveau', '==', filterLevel);
-        }
-        
-        const snapshot = await query.get();
-        const activitiesList = document.getElementById('activitiesList');
-        
-        if (activitiesList) {
-            activitiesList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const activity = doc.data();
-                const card = createActivityCard(activity, doc.id);
-                activitiesList.appendChild(card);
-            });
-        }
-    } catch (error) {
-        console.error("Erreur lors du chargement des activités:", error);
-        showError("Erreur lors du chargement des activités");
+    // Gestionnaire pour le formulaire
+    const configForm = document.getElementById('configForm');
+    if (configForm) {
+        configForm.addEventListener('submit', handleFormSubmit);
+    }
+
+    // Gestionnaire pour le bouton Annuler
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            ViewManager.showActivitiesList();
+        });
     }
 }
 
-function createActivityCard(activity, id) {
-    const card = document.createElement('article');
-    card.className = 'activity-card';
-    card.setAttribute('role', 'listitem');
-    
-    card.innerHTML = `
-        <div class="activity-header">
-            <h3>${activity.theme}</h3>
-            <span class="badge-niveau">${activity.niveau}</span>
-        </div>
-        <div class="activity-content">
-            <p>${activity.contexte}</p>
-        </div>
-        <div class="activity-footer">
-            <div class="actions">
-                <button class="btn-edit" onclick="editActivity('${id}')">Modifier</button>
-                <button class="btn-delete" onclick="deleteActivity('${id}')">Supprimer</button>
-            </div>
-        </div>
-    `;
-    
-    return card;
-}
+async function handleFormSubmit(event) {
+    event.preventDefault();
 
-async function saveActivity() {
+    const formData = {
+        theme: document.getElementById('theme').value,
+        niveau: document.getElementById('niveau').value,
+        contexte: document.getElementById('contexte').value,
+        role: document.getElementById('role').value,
+        personnalite: document.getElementById('personnalite').value
+    };
+
     try {
-        const activityData = {
-            ...currentConfig,
-            dateCreation: new Date(),
-            dateModification: new Date()
-        };
-
-        if (currentConfig.id) {
-            await window.db.collection('activities').doc(currentConfig.id).update(activityData);
+        if (currentActivityId) {
+            await updateActivity(currentActivityId, formData);
         } else {
-            await window.db.collection('activities').add(activityData);
+            await addActivity(formData);
         }
-
-        showSuccess("Activité sauvegardée avec succès");
         ViewManager.showActivitiesList();
     } catch (error) {
-        console.error("Erreur lors de la sauvegarde:", error);
-        showError("Erreur lors de la sauvegarde de l'activité");
-    }
-}
-
-async function deleteActivity(id) {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette activité ?")) {
-        try {
-            await window.db.collection('activities').doc(id).delete();
-            showSuccess("Activité supprimée avec succès");
-            loadActivities();
-        } catch (error) {
-            console.error("Erreur lors de la suppression:", error);
-            showError("Erreur lors de la suppression de l'activité");
-        }
-    }
-}
-
-async function editActivity(id) {
-    try {
-        const doc = await window.db.collection('activities').doc(id).get();
-        if (doc.exists) {
-            currentConfig = { ...doc.data(), id };
-            fillForm(currentConfig);
-            ViewManager.showConfigForm();
-        }
-    } catch (error) {
-        console.error("Erreur lors de l'édition:", error);
-        showError("Erreur lors du chargement de l'activité");
+        showError('Erreur lors de la sauvegarde de l\'activité');
     }
 }
 
 // Fonctions utilitaires
-function validateForm() {
-    const requiredFields = ['theme', 'niveau', 'contexte', 'role', 'personnalite'];
-    const missingFields = requiredFields.filter(field => {
-        const element = document.getElementById(field);
-        return !element || !element.value.trim();
-    });
-
-    if (missingFields.length > 0) {
-        showError("Veuillez remplir tous les champs obligatoires");
-        return false;
-    }
-    return true;
-}
-
-function updateFormState() {
-    const formElements = document.querySelectorAll('#configForm input, #configForm select, #configForm textarea');
-    formElements.forEach(element => {
-        if (element.id) {
-            currentConfig[element.id] = element.value;
-        }
-    });
-}
-
-function fillForm(data) {
-    Object.entries(data).forEach(([key, value]) => {
-        const element = document.getElementById(key);
-        if (element) {
-            element.value = value;
-        }
-    });
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 function resetForm() {
-    currentConfig = {
-        theme: '',
-        niveau: '',
-        contexte: '',
-        role: '',
-        personnalite: '',
-        objectifs: [],
-        structures: [],
-        vocabulaire: [],
-        correction_style: 'immediate',
-        aide_niveau: 'minimal'
-    };
-    
     const form = document.getElementById('configForm');
     if (form) {
         form.reset();
     }
 }
 
-// Fonctions de notification
 function showError(message) {
-    // Implémentez votre système de notification d'erreur ici
-    console.error(message);
-    alert(message); // À remplacer par une meilleure UI
+    alert(message); // À améliorer avec un système de notification plus élégant
 }
 
-function showSuccess(message) {
-    // Implémentez votre système de notification de succès ici
-    console.log(message);
-    alert(message); // À remplacer par une meilleure UI
+async function confirmDelete(activityId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette activité ?')) {
+        try {
+            await deleteActivity(activityId);
+            loadAndDisplayActivities();
+        } catch (error) {
+            showError('Erreur lors de la suppression de l\'activité');
+        }
+    }
 }
+
+// Exposition des fonctions nécessaires au niveau global pour les gestionnaires d'événements inline
+window.editActivity = async function(activityId) {
+    currentActivityId = activityId;
+    // Logique pour charger et afficher l'activité dans le formulaire
+    ViewManager.showConfigForm();
+};
+
+window.confirmDelete = confirmDelete;
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', () => {
+    initializeEventListeners();
+    ViewManager.showActivitiesList();
+});
