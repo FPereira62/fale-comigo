@@ -1,20 +1,22 @@
+[build]
+  publish = "dist"
+
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
-    Cache-Control = "max-age=31536000"
     Content-Type = "text/html; charset=utf-8"
-    Content-Security-Policy = "default-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'"
+    Cache-Control = "no-cache"
 
 [[headers]]
-  for = "*.css"
+  for = "/*.css"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "text/css; charset=utf-8"
 
 [[headers]]
-  for = "*.js"
+  for = "/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "application/javascript; charset=utf-8"
 
 [[redirects]]
   from = "/*"
