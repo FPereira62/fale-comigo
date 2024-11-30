@@ -1,36 +1,24 @@
 [build]
-  publish = "dist"
+  publish = "public"
 
-[[headers]]
-  for = "/"
-  [headers.values]
-    Content-Type = "text/html; charset=utf-8"
-    X-Content-Type-Options = "nosniff"
-    # Enlève les en-têtes non nécessaires
-    Content-Security-Policy = "frame-ancestors 'none'"
-    # Cache adapté pour la page principale
-    Cache-Control = "no-store"
+[[redirects]]
+  from = "/student/*"
+  to = "/student/index.html"
+  status = 200
 
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    # Cache optimisé pour les ressources statiques
-    Cache-Control = "public, max-age=31536000, immutable"
-    X-Content-Type-Options = "nosniff"
-
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    Content-Type = "text/css; charset=utf-8"
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
-    Cache-Control = "public, max-age=31536000, immutable"
+[[redirects]]
+  from = "/teacher/*"
+  to = "/teacher/index.html"
+  status = 200
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/student/index.html"
   status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
