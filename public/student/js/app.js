@@ -1,126 +1,183 @@
-// Configuration
-const OPENAI_API_KEY = 'your-api-key';  // À remplacer par votre clé API
+// Import Firebase
+import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // État de l'application
-let currentActivity = null;
-let isRecording = false;
+const state = {
+    currentActivity: null,
+    isRecording: false,
+    recognition: null,
+    synthesis: window.speechSynthesis,
+    db: null,
+    currentConversation: null
+};
 
 // Éléments DOM
-const activitiesSection = document.querySelector('.activities-section');
-const chatSection = document.querySelector('.chat-section');
-const chatMessages = document.getElementById('chatMessages');
-const userInput = document.getElementById('userInput');
-const sendButton = document.getElementById('sendButton');
-const voiceButton = document.getElementById('voiceButton');
+const elements = {
+    activitiesSection: document.querySelector('.activities-section'),
+    chatSection: document.querySelector('.chat-section'),
+    chatMessages: document.getElementById('chatMessages'),
+    userInput: document.getElementById('userInput'),
+    sendButton: document.getElementById('sendButton'),
+    voiceButton: document.getElementById('voiceButton')
+};
+
+// Configuration de la reconnaissance vocale
+function setupSpeechRecognition() {
+    if ('webkitSpeechRecognition' in window) {
+        state.recognition = new webkitSpeechRecognition();
+        state.recognition.continuous = false;
+        state.recognition.interimResults = false;
+        state.recognition.lang = 'pt-BR';
+
+        state.recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            elements.userInput.value = text;
+            sendMessage();
+        };
+
+        state.recognition.onerror = (event) => {
+            console.error('Erreur de reconnaissance vocale:', event.error);
+            stopVoiceRecording();
+        };
+    }
+}
+
+// Initialisation de Firebase
+function initializeFirestore(app) {
+    state.db = getFirestore(app);
+}
 
 // Gestionnaires d'événements
-document.querySelectorAll('.activity-card').forEach(card => {
-    card.addEventListener('click', () => startActivity(card.querySelector('h3').textContent));
-});
+function setupEventListeners() {
+    document.querySelectorAll('.activity-card').forEach(card => {
+        card.addEventListener('click', () => startActivity(card.querySelector('h3').textContent));
+    });
 
-sendButton.addEventListener('click', sendMessage);
-voiceButton.addEventListener('click', toggleVoiceRecording);
+    elements.sendButton.addEventListener('click', sendMessage);
+    elements.voiceButton.addEventListener('click', toggleVoiceRecording);
 
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-});
+    elements.userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
 
-// Auto-resize du textarea
-userInput.addEventListener('input', () => {
-    userInput.style.height = 'auto';
-    userInput.style.height = (userInput.scrollHeight) + 'px';
-});
-
-// Fonctions principales
-function startActivity(activity) {
-    currentActivity = activity;
-    activitiesSection.style.display = 'none';
-    chatSection.style.display = 'block';
-    
-    // Message de bienvenue
-    addMessage({
-        role: 'assistant',
-        content: `Bonjour! Nous allons pratiquer : ${activity}. Je suis prêt à commencer quand vous voulez.`
+    elements.userInput.addEventListener('input', () => {
+        elements.userInput.style.height = 'auto';
+        elements.userInput.style.height = `${elements.userInput.scrollHeight}px`;
     });
 }
 
-async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
-
-    // Ajouter le message de l'utilisateur
-    addMessage({ role: 'user', content: message });
-    userInput.value = '';
-    userInput.style.height = 'auto';
-
+// Fonctions principales
+async function startActivity(activity) {
+    state.currentActivity = activity;
+    elements.activitiesSection.style.display = 'none';
+    elements.chatSection.style.display = 'block';
+    
     try {
-        const response = await callOpenAI(message);
-        addMessage(response);
-        // Synthèse vocale de la réponse
-        speakText(response.content);
-    } catch (error) {
-        console.error('Erreur:', error);
+        // Création d'une nouvelle conversation dans Firestore
+        const conversationRef = await addDoc(collection(state.db, 'conversations'), {
+            activity,
+            startedAt: new Date(),
+            userId: 'anonymous' // À remplacer par l'ID de l'utilisateur authentifié
+        });
+        state.currentConversation = conversationRef.id;
+
+        // Message de bienvenue
         addMessage({
             role: 'assistant',
-            content: "Désolé, une erreur s'est produite. Pouvez-vous réessayer?"
+            content: getWelcomeMessage(activity)
+        });
+    } catch (error) {
+        console.error('Erreur lors du démarrage de l\'activité:', error);
+    }
+}
+
+function getWelcomeMessage(activity) {
+    const messages = {
+        '1. Faça-me perguntas básicas': 'Olá! Vou fazer algumas perguntas para praticarmos sua apresentação pessoal. Vamos começar? Como você se chama?',
+        '2. Simule uma conversa': 'Oi! Vamos simular uma conversa informal. Imagine que nos encontramos pela primeira vez. Como você me cumprimentaria?'
+    };
+    return messages[activity] || `Vamos praticar: ${activity}. Estou pronto para começar!`;
+}
+
+async function sendMessage() {
+    const message = elements.userInput.value.trim();
+    if (!message) return;
+
+    try {
+        // Ajout du message utilisateur
+        addMessage({ role: 'user', content: message });
+        
+        // Sauvegarde dans Firestore
+        await addDoc(collection(state.db, `conversations/${state.currentConversation}/messages`), {
+            role: 'user',
+            content: message,
+            timestamp: new Date()
+        });
+
+        // Réinitialisation de l'input
+        elements.userInput.value = '';
+        elements.userInput.style.height = 'auto';
+
+        // Simulation de réponse (à remplacer par l'appel à votre API)
+        const response = await getAIResponse(message);
+        
+        // Ajout de la réponse de l'assistant
+        addMessage(response);
+        
+        // Sauvegarde de la réponse dans Firestore
+        await addDoc(collection(state.db, `conversations/${state.currentConversation}/messages`), {
+            ...response,
+            timestamp: new Date()
+        });
+
+        // Synthèse vocale de la réponse
+        speakText(response.content);
+
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi du message:', error);
+        addMessage({
+            role: 'assistant',
+            content: "Desculpe, ocorreu um erro. Pode tentar novamente?"
         });
     }
 }
 
-// Reconnaissance vocale
+// Fonctions de reconnaissance vocale
 function toggleVoiceRecording() {
-    if (!isRecording) {
+    if (!state.recognition) return;
+
+    if (!state.isRecording) {
         startVoiceRecording();
     } else {
         stopVoiceRecording();
     }
-    isRecording = !isRecording;
-    voiceButton.classList.toggle('recording');
 }
 
 function startVoiceRecording() {
-    // À implémenter avec l'API Web Speech
-    console.log('Début enregistrement...');
+    if (state.recognition) {
+        state.isRecording = true;
+        elements.voiceButton.classList.add('recording');
+        state.recognition.start();
+    }
 }
 
 function stopVoiceRecording() {
-    // À implémenter avec l'API Web Speech
-    console.log('Fin enregistrement...');
+    if (state.recognition) {
+        state.isRecording = false;
+        elements.voiceButton.classList.remove('recording');
+        state.recognition.stop();
+    }
 }
 
 // Synthèse vocale
 function speakText(text) {
+    if (!state.synthesis) return;
+    
+    // Arrêt de toute synthèse vocale en cours
+    state.synthesis.cancel();
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';  // Portugais du Brésil
-    speechSynthesis.speak(utterance);
-}
-
-// Affichage des messages
-function addMessage({ role, content }) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${role}`;
-    messageDiv.textContent = content;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Appel à l'API OpenAI
-async function callOpenAI(message) {
-    // Simulé pour le moment - à remplacer par un vrai appel API
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({
-                role: 'assistant',
-                content: "Je comprends votre message. Comment puis-je vous aider à pratiquer?"
-            });
-        }, 1000);
-    });
-}
-
-// Initialisation
-document.addEventListener('DOMContentLoaded', () => {
-    // Code d'initialisation si nécessaire
-});
+    utterance.lang = 'pt-
