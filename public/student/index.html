@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Parceiro virtual de conversação para estudantes do nível Elementar 1">
     <title>FALE COMIGO! (PE-1)</title>
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Préchargement de l'image avatar -->
+    <link rel="preload" href="../img/avatar.webp" as="image">
 </head>
 <body class="dark-theme">
     <header>
         <div class="header-content">
             <h1>FALE COMIGO! (PE-1)</h1>
             <p class="subtitle">Parceiro virtual de conversação para estudantes do nível Elementar 1</p>
-            <img src="../img/avatar.webp" alt="Avatar do assistente virtual" class="avatar">
+            <img src="../img/avatar.webp" alt="Avatar do assistente virtual" class="avatar" width="80" height="80">
         </div>
     </header>
 
@@ -19,11 +22,11 @@
         <section class="activities-section">
             <h2>Activités de conversation</h2>
             <div class="activities-grid">
-                <button class="activity-card" aria-label="Iniciar atividade: Faça-me perguntas básicas">
+                <button type="button" class="activity-card" aria-label="Iniciar atividade: Faça-me perguntas básicas">
                     <h3>1. Faça-me perguntas básicas</h3>
                     <p>Praticar o objetivo comunicativo 'Apresentar-se'</p>
                 </button>
-                <button class="activity-card" aria-label="Iniciar atividade: Simule uma conversa">
+                <button type="button" class="activity-card" aria-label="Iniciar atividade: Simule uma conversa">
                     <h3>2. Simule uma conversa</h3>
                     <p>Praticar apresentações e saudações</p>
                 </button>
@@ -32,18 +35,34 @@
 
         <section class="chat-section" style="display: none;">
             <div class="chat-container">
-                <div id="chatMessages" class="chat-messages"></div>
+                <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
                 <div class="chat-input">
-                    <textarea id="userInput" placeholder="Digite sua mensagem..." rows="1" aria-label="Campo de mensagem"></textarea>
+                    <textarea 
+                        id="userInput" 
+                        placeholder="Digite sua mensagem..." 
+                        rows="1" 
+                        aria-label="Campo de mensagem"
+                        maxlength="500"
+                    ></textarea>
                     <div class="chat-buttons">
-                        <button id="voiceButton" class="icon-button" aria-label="Activer la voix">
-                            <svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button 
+                            id="voiceButton" 
+                            class="icon-button" 
+                            type="button"
+                            aria-label="Ativar gravação de voz"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
                                 <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                             </svg>
                         </button>
-                        <button id="sendButton" class="icon-button" aria-label="Envoyer">
-                            <svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button 
+                            id="sendButton" 
+                            class="icon-button" 
+                            type="button"
+                            aria-label="Enviar mensagem"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path d="M22 2L11 13" />
                                 <path d="M22 2l-7 20-4-9-9-4 20-7z" />
                             </svg>
@@ -54,20 +73,32 @@
         </section>
     </main>
 
-    <!-- Configuration Firebase -->
+    <!-- Firebase App (the core Firebase SDK) -->
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            // Firebase config will go here
+            // À remplacer par votre configuration Firebase
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        
+
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Make db available globally
+        window.db = db;
     </script>
 
-    <script src="js/app.js"></script>
+    <!-- Application JavaScript -->
+    <script src="js/app.js" defer></script>
 </body>
 </html>
