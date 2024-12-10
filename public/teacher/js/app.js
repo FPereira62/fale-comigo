@@ -1,11 +1,9 @@
-import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { initializeFirebase } from './firebase-config.js';
 
-// État de l'application
+let db = null;
 const state = {
     exercises: [],
-    content: [],
-    db: db
+    content: []
 };
 
 // Éléments DOM
@@ -18,25 +16,48 @@ const elements = {
     exerciseForm: document.getElementById('exerciseForm')
 };
 
-// Initialisation des données
+// Initialisation
 async function initializeApp() {
     try {
-        await loadExercises();
-        await loadContent();
+        // Initialiser Firebase
+        db = await initializeFirebase();
+        
+        // Importer les fonctions Firestore nécessaires
+        const { collection, addDoc, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firestore.js');
+        
+        // Stocker les fonctions Firestore dans state
+        state.firestore = {
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            orderBy
+        };
+
+        // Initialiser l'interface
+        await Promise.all([
+            loadExercises(),
+            loadContent()
+        ]);
+
         setupEventListeners();
     } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
-        showError('Erreur lors du chargement des données');
+        showError('Erreur lors de l\'initialisation de l\'application');
     }
 }
 
 // Chargement des exercices
 async function loadExercises() {
+    if (!db || !state.firestore) return;
+    
     try {
-        const exercisesQuery = query(collection(db, 'exercises'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(exercisesQuery);
+        const { collection, getDocs, query, orderBy } = state.firestore;
+        const exercisesRef = collection(db, 'exercises');
+        const exercisesQuery = query(exercisesRef, orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(exercisesQuery);
         
-        state.exercises = querySnapshot.docs.map(doc => ({
+        state.exercises = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
@@ -50,11 +71,15 @@ async function loadExercises() {
 
 // Chargement du contenu
 async function loadContent() {
+    if (!db || !state.firestore) return;
+    
     try {
-        const contentQuery = query(collection(db, 'content'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(contentQuery);
+        const { collection, getDocs, query, orderBy } = state.firestore;
+        const contentRef = collection(db, 'content');
+        const contentQuery = query(contentRef, orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(contentQuery);
         
-        state.content = querySnapshot.docs.map(doc => ({
+        state.content = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
@@ -66,17 +91,35 @@ async function loadContent() {
     }
 }
 
-// Gestionnaires d'événements
+// Configuration des écouteurs d'événements
 function setupEventListeners() {
-    elements.newExerciseBtn?.addEventListener('click', () => openModal('newExerciseModal'));
-    elements.uploadContentBtn?.addEventListener('click', handleContentUpload);
-    elements.exerciseForm?.addEventListener('submit', handleExerciseSubmit);
+    if (elements.newExerciseBtn) {
+        elements.newExerciseBtn.addEventListener('click', () => openModal('newExerciseModal'));
+    }
+    
+    if (elements.uploadContentBtn) {
+        elements.uploadContentBtn.addEventListener('click', handleContentUpload);
+    }
+    
+    if (elements.exerciseForm) {
+        elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
+    }
 
-    // Fermeture des modals
-    document.querySelectorAll('.cancel-modal').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const modal = e.target.closest('.modal');
-            if (modal) closeModal(modal.id);
+    // Gestionnaires pour les modales
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+
+    document.querySelectorAll('.cancel-modal').forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = button.closest('.modal');
+            if (modal) {
+                closeModal(modal.id);
+            }
         });
     });
 }
@@ -84,29 +127,37 @@ function setupEventListeners() {
 // Gestion des modales
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.hidden = false;
+    if (modal) {
+        modal.hidden = false;
+    }
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.hidden = true;
+    if (modal) {
+        modal.hidden = true;
+    }
 }
 
 // Gestion des exercices
 async function handleExerciseSubmit(e) {
     e.preventDefault();
+    if (!db || !state.firestore) return;
 
     const exerciseData = {
         title: elements.exerciseForm.exerciseTitle.value,
         description: elements.exerciseForm.exerciseDescription.value,
         level: elements.exerciseForm.exerciseLevel.value,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
     };
 
     try {
-        await addDoc(collection(db, 'exercises'), exerciseData);
-        await loadExercises(); // Recharge la liste
+        const { collection, addDoc } = state.firestore;
+        const exercisesRef = collection(db, 'exercises');
+        await addDoc(exercisesRef, exerciseData);
+        
+        await loadExercises();
         elements.exerciseForm.reset();
         closeModal('newExerciseModal');
         showSuccess('Exercice créé avec succès');
@@ -118,8 +169,7 @@ async function handleExerciseSubmit(e) {
 
 // Gestion du contenu
 function handleContentUpload() {
-    // À implémenter : logique d'upload de contenu
-    console.log('Upload de contenu à implémenter');
+    console.log('Fonctionnalité d\'upload à implémenter');
 }
 
 // Rendu des exercices
@@ -150,16 +200,16 @@ function renderContent() {
     `).join('');
 }
 
-// Gestion des erreurs
+// Gestion des erreurs et succès
 function showError(message) {
-    // À implémenter : affichage des erreurs
     console.error(message);
+    // Implémenter l'affichage visuel des erreurs ici
 }
 
 function showSuccess(message) {
-    // À implémenter : affichage des succès
     console.log(message);
+    // Implémenter l'affichage visuel des succès ici
 }
 
-// Initialisation de l'application
+// Démarrage de l'application
 document.addEventListener('DOMContentLoaded', initializeApp);
