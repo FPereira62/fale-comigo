@@ -1,6 +1,3 @@
-// Import Firebase
-import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 // État de l'application
 const state = {
     currentActivity: null,
@@ -42,33 +39,6 @@ function setupSpeechRecognition() {
     }
 }
 
-// Initialisation de Firebase
-function initializeFirestore(app) {
-    state.db = getFirestore(app);
-}
-
-// Gestionnaires d'événements
-function setupEventListeners() {
-    document.querySelectorAll('.activity-card').forEach(card => {
-        card.addEventListener('click', () => startActivity(card.querySelector('h3').textContent));
-    });
-
-    elements.sendButton.addEventListener('click', sendMessage);
-    elements.voiceButton.addEventListener('click', toggleVoiceRecording);
-
-    elements.userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    elements.userInput.addEventListener('input', () => {
-        elements.userInput.style.height = 'auto';
-        elements.userInput.style.height = `${elements.userInput.scrollHeight}px`;
-    });
-}
-
 // Fonctions principales
 async function startActivity(activity) {
     state.currentActivity = activity;
@@ -76,14 +46,6 @@ async function startActivity(activity) {
     elements.chatSection.style.display = 'block';
     
     try {
-        // Création d'une nouvelle conversation dans Firestore
-        const conversationRef = await addDoc(collection(state.db, 'conversations'), {
-            activity,
-            startedAt: new Date(),
-            userId: 'anonymous' // À remplacer par l'ID de l'utilisateur authentifié
-        });
-        state.currentConversation = conversationRef.id;
-
         // Message de bienvenue
         addMessage({
             role: 'assistant',
@@ -110,28 +72,18 @@ async function sendMessage() {
         // Ajout du message utilisateur
         addMessage({ role: 'user', content: message });
         
-        // Sauvegarde dans Firestore
-        await addDoc(collection(state.db, `conversations/${state.currentConversation}/messages`), {
-            role: 'user',
-            content: message,
-            timestamp: new Date()
-        });
-
         // Réinitialisation de l'input
         elements.userInput.value = '';
         elements.userInput.style.height = 'auto';
 
         // Simulation de réponse (à remplacer par l'appel à votre API)
-        const response = await getAIResponse(message);
+        const response = {
+            role: 'assistant',
+            content: 'Entendi sua mensagem. Como posso ajudar você a praticar?'
+        };
         
         // Ajout de la réponse de l'assistant
         addMessage(response);
-        
-        // Sauvegarde de la réponse dans Firestore
-        await addDoc(collection(state.db, `conversations/${state.currentConversation}/messages`), {
-            ...response,
-            timestamp: new Date()
-        });
 
         // Synthèse vocale de la réponse
         speakText(response.content);
@@ -180,4 +132,43 @@ function speakText(text) {
     state.synthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-
+    utterance.lang = 'pt-BR';
+    state.synthesis.speak(utterance);
+}
+
+// Affichage des messages
+function addMessage({ role, content }) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}`;
+    messageDiv.textContent = content;
+    elements.chatMessages.appendChild(messageDiv);
+    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+}
+
+// Configuration des événements au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    setupSpeechRecognition();
+    
+    // Configuration des gestionnaires d'événements
+    document.querySelectorAll('.activity-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const title = card.querySelector('h3').textContent;
+            startActivity(title);
+        });
+    });
+
+    elements.sendButton.addEventListener('click', sendMessage);
+    elements.voiceButton.addEventListener('click', toggleVoiceRecording);
+
+    elements.userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    elements.userInput.addEventListener('input', () => {
+        elements.userInput.style.height = 'auto';
+        elements.userInput.style.height = `${elements.userInput.scrollHeight}px`;
+    });
+});
