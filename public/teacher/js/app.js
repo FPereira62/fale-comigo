@@ -1,6 +1,14 @@
-import { initializeFirebase } from './firebase-config.js';
+// Configuration Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBVAVVcpmicOnyXYBydEW4KfCu0B0ukNe4",
+    authDomain: "fale-comigo-d4522.firebaseapp.com",
+    projectId: "fale-comigo-d4522",
+    storageBucket: "fale-comigo-d4522.firebasestorage.app",
+    messagingSenderId: "464958131394",
+    appId: "1:464958131394:web:547ac8416d49f8d31d3f5b"
+};
 
-let db = null;
+// État de l'application
 const state = {
     exercises: [],
     content: []
@@ -16,46 +24,16 @@ const elements = {
     exerciseForm: document.getElementById('exerciseForm')
 };
 
-// Initialisation
-async function initializeApp() {
-    try {
-        // Initialiser Firebase
-        db = await initializeFirebase();
-        
-        // Importer les fonctions Firestore nécessaires
-        const { collection, addDoc, getDocs, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firestore.js');
-        
-        // Stocker les fonctions Firestore dans state
-        state.firestore = {
-            collection,
-            addDoc,
-            getDocs,
-            query,
-            orderBy
-        };
-
-        // Initialiser l'interface
-        await Promise.all([
-            loadExercises(),
-            loadContent()
-        ]);
-
-        setupEventListeners();
-    } catch (error) {
-        console.error('Erreur lors de l\'initialisation:', error);
-        showError('Erreur lors de l\'initialisation de l\'application');
-    }
-}
+// Initialisation de Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // Chargement des exercices
 async function loadExercises() {
-    if (!db || !state.firestore) return;
-    
     try {
-        const { collection, getDocs, query, orderBy } = state.firestore;
-        const exercisesRef = collection(db, 'exercises');
-        const exercisesQuery = query(exercisesRef, orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(exercisesQuery);
+        const snapshot = await db.collection('exercises')
+            .orderBy('createdAt', 'desc')
+            .get();
         
         state.exercises = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -71,13 +49,10 @@ async function loadExercises() {
 
 // Chargement du contenu
 async function loadContent() {
-    if (!db || !state.firestore) return;
-    
     try {
-        const { collection, getDocs, query, orderBy } = state.firestore;
-        const contentRef = collection(db, 'content');
-        const contentQuery = query(contentRef, orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(contentQuery);
+        const snapshot = await db.collection('content')
+            .orderBy('createdAt', 'desc')
+            .get();
         
         state.content = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -93,17 +68,9 @@ async function loadContent() {
 
 // Configuration des écouteurs d'événements
 function setupEventListeners() {
-    if (elements.newExerciseBtn) {
-        elements.newExerciseBtn.addEventListener('click', () => openModal('newExerciseModal'));
-    }
-    
-    if (elements.uploadContentBtn) {
-        elements.uploadContentBtn.addEventListener('click', handleContentUpload);
-    }
-    
-    if (elements.exerciseForm) {
-        elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
-    }
+    elements.newExerciseBtn?.addEventListener('click', () => openModal('newExerciseModal'));
+    elements.uploadContentBtn?.addEventListener('click', handleContentUpload);
+    elements.exerciseForm?.addEventListener('submit', handleExerciseSubmit);
 
     // Gestionnaires pour les modales
     document.querySelectorAll('.modal').forEach(modal => {
@@ -142,21 +109,17 @@ function closeModal(modalId) {
 // Gestion des exercices
 async function handleExerciseSubmit(e) {
     e.preventDefault();
-    if (!db || !state.firestore) return;
 
     const exerciseData = {
         title: elements.exerciseForm.exerciseTitle.value,
         description: elements.exerciseForm.exerciseDescription.value,
         level: elements.exerciseForm.exerciseLevel.value,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
-        const { collection, addDoc } = state.firestore;
-        const exercisesRef = collection(db, 'exercises');
-        await addDoc(exercisesRef, exerciseData);
-        
+        await db.collection('exercises').add(exerciseData);
         await loadExercises();
         elements.exerciseForm.reset();
         closeModal('newExerciseModal');
@@ -182,7 +145,7 @@ function renderExercises() {
             <p>${exercise.description}</p>
             <div class="exercise-meta">
                 <span class="level">Niveau: ${exercise.level}</span>
-                <span class="date">Créé le: ${new Date(exercise.createdAt).toLocaleDateString()}</span>
+                <span class="date">Créé le: ${exercise.createdAt ? new Date(exercise.createdAt.seconds * 1000).toLocaleDateString() : 'Date inconnue'}</span>
             </div>
         </div>
     `).join('');
@@ -203,13 +166,21 @@ function renderContent() {
 // Gestion des erreurs et succès
 function showError(message) {
     console.error(message);
-    // Implémenter l'affichage visuel des erreurs ici
+    // Implémenter l'affichage visuel des erreurs
 }
 
 function showSuccess(message) {
     console.log(message);
-    // Implémenter l'affichage visuel des succès ici
+    // Implémenter l'affichage visuel des succès
 }
 
-// Démarrage de l'application
-document.addEventListener('DOMContentLoaded', initializeApp);
+// Initialisation de l'application
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        setupEventListeners();
+        await Promise.all([loadExercises(), loadContent()]);
+    } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
+        showError('Erreur lors de l\'initialisation de l\'application');
+    }
+});
