@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build
+public/build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+netlify.toml
+
+# IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.cache/
+.firebase/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Firebase
+.firebaserc
+firebase-debug.log

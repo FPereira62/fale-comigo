@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interface de gestion pour enseignants - FALE COMIGO!">
+    <title>FALE COMIGO! - Interface Enseignant</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preload" href="../img/avatar.webp" as="image">
+</head>
+<body class="dark-theme">
+    <header>
+        <div class="header-content">
+            <h1>FALE COMIGO! - Interface Enseignant</h1>
+            <p class="subtitle">Gestion des activités et de la base de connaissances</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="dashboard-grid">
+            <!-- Banque d'exercices -->
+            <section class="dashboard-section exercises-bank">
+                <h2>Banque d'exercices</h2>
+                <div class="actions">
+                    <button id="newExerciseBtn" class="primary-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Nouvel exercice
+                    </button>
+                </div>
+                <div id="exercisesList" class="list-container">
+                    <!-- Les exercices seront ajoutés ici dynamiquement -->
+                </div>
+            </section>
+
+            <!-- Base de connaissances -->
+            <section class="dashboard-section knowledge-base">
+                <h2>Base de connaissances</h2>
+                <div class="actions">
+                    <button id="uploadContentBtn" class="primary-button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Importer du contenu
+                    </button>
+                </div>
+                <div id="contentList" class="list-container">
+                    <!-- Le contenu sera ajouté ici dynamiquement -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="newExerciseModal" class="modal" hidden>
+        <div class="modal-content">
+            <h3>Nouvel exercice</h3>
+            <form id="exerciseForm">
+                <div class="form-group">
+                    <label for="exerciseTitle">Titre</label>
+                    <input type="text" id="exerciseTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="exerciseDescription">Description</label>
+                    <textarea id="exerciseDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="exerciseLevel">Niveau</label>
+                    <select id="exerciseLevel" required>
+                        <option value="PE1">Elementar 1</option>
+                        <option value="PE2">Elementar 2</option>
+                        <option value="PI1">Intermediário 1</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="secondary-button" onclick="closeModal('newExerciseModal')">Annuler</button>
+                    <button type="submit" class="primary-button">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: process.env.FIREBASE_API_KEY,
+            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+            appId: process.env.FIREBASE_APP_ID
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db;
+    </script>
+
+    <!-- Application JavaScript -->
+    <script src="js/app.js" defer></script>
+</body>
+</html>
