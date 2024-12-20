@@ -14,9 +14,6 @@ const elements = {
     exerciseForm: document.getElementById('exerciseForm')
 };
 
-// Instance Firestore
-const db = firebase.firestore();
-
 // Chargement des exercices
 async function loadExercises() {
     try {
@@ -49,9 +46,17 @@ async function loadContent() {
 
 // Configuration des écouteurs d'événements
 function setupEventListeners() {
-    elements.newExerciseBtn?.addEventListener('click', () => openModal('newExerciseModal'));
-    elements.uploadContentBtn?.addEventListener('click', handleContentUpload);
-    elements.exerciseForm?.addEventListener('submit', handleExerciseSubmit);
+    if (elements.newExerciseBtn) {
+        elements.newExerciseBtn.addEventListener('click', () => openModal('newExerciseModal'));
+    }
+    
+    if (elements.uploadContentBtn) {
+        elements.uploadContentBtn.addEventListener('click', handleContentUpload);
+    }
+    
+    if (elements.exerciseForm) {
+        elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
+    }
 
     // Gestionnaires pour les modales
     document.querySelectorAll('.modal').forEach(modal => {
@@ -91,8 +96,7 @@ async function handleExerciseSubmit(e) {
         title: elements.exerciseForm.exerciseTitle.value,
         description: elements.exerciseForm.exerciseDescription.value,
         level: elements.exerciseForm.exerciseLevel.value,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
