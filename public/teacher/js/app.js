@@ -16,12 +16,21 @@ const elements = {
 
 // Chargement des exercices
 async function loadExercises() {
+    if (!window.db) {
+        console.error('Database not initialized');
+        return;
+    }
+
     try {
-        const snapshot = await db.collection('exercises').orderBy('createdAt', 'desc').get();
+        const snapshot = await window.db.collection('exercises')
+            .orderBy('createdAt', 'desc')
+            .get();
+
         state.exercises = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
         renderExercises();
     } catch (error) {
         console.error('Erreur lors du chargement des exercices:', error);
@@ -31,12 +40,21 @@ async function loadExercises() {
 
 // Chargement du contenu
 async function loadContent() {
+    if (!window.db) {
+        console.error('Database not initialized');
+        return;
+    }
+
     try {
-        const snapshot = await db.collection('content').orderBy('createdAt', 'desc').get();
+        const snapshot = await window.db.collection('content')
+            .orderBy('createdAt', 'desc')
+            .get();
+
         state.content = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
         renderContent();
     } catch (error) {
         console.error('Erreur lors du chargement du contenu:', error);
@@ -46,17 +64,9 @@ async function loadContent() {
 
 // Configuration des écouteurs d'événements
 function setupEventListeners() {
-    if (elements.newExerciseBtn) {
-        elements.newExerciseBtn.addEventListener('click', () => openModal('newExerciseModal'));
-    }
-    
-    if (elements.uploadContentBtn) {
-        elements.uploadContentBtn.addEventListener('click', handleContentUpload);
-    }
-    
-    if (elements.exerciseForm) {
-        elements.exerciseForm.addEventListener('submit', handleExerciseSubmit);
-    }
+    elements.newExerciseBtn?.addEventListener('click', () => openModal('newExerciseModal'));
+    elements.uploadContentBtn?.addEventListener('click', handleContentUpload);
+    elements.exerciseForm?.addEventListener('submit', handleExerciseSubmit);
 
     // Gestionnaires pour les modales
     document.querySelectorAll('.modal').forEach(modal => {
@@ -91,6 +101,10 @@ function closeModal(modalId) {
 // Gestion des exercices
 async function handleExerciseSubmit(e) {
     e.preventDefault();
+    if (!window.db) {
+        console.error('Database not initialized');
+        return;
+    }
 
     const exerciseData = {
         title: elements.exerciseForm.exerciseTitle.value,
@@ -100,7 +114,7 @@ async function handleExerciseSubmit(e) {
     };
 
     try {
-        await db.collection('exercises').add(exerciseData);
+        await window.db.collection('exercises').add(exerciseData);
         await loadExercises();
         elements.exerciseForm.reset();
         closeModal('newExerciseModal');
@@ -113,6 +127,7 @@ async function handleExerciseSubmit(e) {
 
 // Gestion du contenu
 function handleContentUpload() {
+    // À implémenter
     console.log('Fonctionnalité d\'upload à implémenter');
 }
 
@@ -155,6 +170,11 @@ function showSuccess(message) {
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
+    if (!window.db) {
+        console.error('Firebase not initialized');
+        return;
+    }
+    
     setupEventListeners();
     Promise.all([loadExercises(), loadContent()])
         .catch(error => {
